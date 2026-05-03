@@ -111,14 +111,17 @@
                 </div>
                 <span class="material-symbols-outlined text-text-secondary">chevron_right</span>
             </a>
-            <a class="flex items-center gap-4 p-4 hover:bg-error-container/50 transition-colors group" href="#">
-                <div class="w-10 h-10 rounded-full bg-error-container/30 group-hover:bg-error-container flex items-center justify-center text-error transition-colors">
-                    <span class="material-symbols-outlined">logout</span>
-                </div>
-                <div class="flex-1">
-                    <span class="font-body-lg text-body-lg text-error block font-medium">Keluar</span>
-                </div>
-            </a>
+            <form action="{{ route('logout') }}" method="POST" class="contents">
+                @csrf
+                <button type="submit" class="w-full flex items-center gap-4 p-4 hover:bg-error-container/50 transition-colors group cursor-pointer">
+                    <div class="w-10 h-10 rounded-full bg-error-container/30 group-hover:bg-error-container flex items-center justify-center text-error transition-colors">
+                        <span class="material-symbols-outlined">logout</span>
+                    </div>
+                    <div class="flex-1 text-left">
+                        <span class="font-body-lg text-body-lg text-error block font-medium">Keluar</span>
+                    </div>
+                </button>
+            </form>
         </div>
     </section>
 </div>
