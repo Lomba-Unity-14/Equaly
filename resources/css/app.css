@@ -7,6 +7,14 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@utility no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-h1: 'Inter', ui-sans-serif, system-ui, sans-serif;
