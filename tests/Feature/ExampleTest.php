@@ -17,9 +17,25 @@ class ExampleTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_user_can_access_home(): void
+    public function test_user_without_onboarding_is_redirected(): void
     {
         $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/');
+
+        $response->assertRedirect(route('onboarding'));
+    }
+
+    public function test_user_with_completed_onboarding_can_access_home(): void
+    {
+        $user = User::factory()->create();
+        $user->profile()->create([
+            'disability_condition' => ['tunarungu'],
+            'communication_preference' => ['full_teks'],
+            'work_environment' => ['remote'],
+            'skills' => ['Figma', 'Laravel'],
+            'onboarding_completed' => true,
+        ]);
 
         $response = $this->actingAs($user)->get('/');
 

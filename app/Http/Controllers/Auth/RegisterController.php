@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class RegisterController extends Controller
@@ -17,8 +18,10 @@ class RegisterController extends Controller
 
     public function store(RegisterRequest $request): RedirectResponse
     {
-        User::create($request->validated());
+        $user = User::create($request->validated());
 
-        return redirect()->route('login')->with('success', 'Pendaftaran berhasil! Silakan masuk.');
+        Auth::login($user);
+
+        return redirect()->route('onboarding');
     }
 }
