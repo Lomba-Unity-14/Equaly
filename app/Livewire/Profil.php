@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -13,6 +14,10 @@ class Profil extends Component
     public $user;
 
     public $profile;
+
+    public bool $showEditProfile = false;
+
+    public bool $showChangePassword = false;
 
     public ?string $editing = null;
 
@@ -108,6 +113,38 @@ class Profil extends Component
         $this->profile = auth()->user()->profile;
         $this->editing = null;
         $this->newSkill = '';
+    }
+
+    #[On('closeEditProfile')]
+    public function closeEditProfile(): void
+    {
+        $this->showEditProfile = false;
+    }
+
+    #[On('closeChangePassword')]
+    public function closeChangePassword(): void
+    {
+        $this->showChangePassword = false;
+    }
+
+    #[On('profile-edited')]
+    public function refreshProfile(): void
+    {
+        $this->user = auth()->user();
+        $this->profile = $this->user->profile;
+
+        if ($this->profile) {
+            $this->skills = $this->profile->skills ?? [];
+            $this->disability_condition = $this->profile->disability_condition ?? [];
+            $this->communication_preference = $this->profile->communication_preference ?? [];
+            $this->work_environment = $this->profile->work_environment ?? [];
+        }
+    }
+
+    #[On('password-changed')]
+    public function passwordChanged(): void
+    {
+        session()->flash('success', 'Kata sandi berhasil diubah.');
     }
 
     public function render()
