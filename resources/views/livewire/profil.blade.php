@@ -8,16 +8,16 @@
     <!-- Profile Card -->
     <section class="flex flex-col items-center bg-surface p-6 rounded-2xl shadow-sm border border-border-subtle text-center">
         <div class="relative w-24 h-24 mb-4">
-            <img
-                src="https://www.gravatar.com/avatar/{{ md5(strtolower(trim($user->email))) }}?s=200&d=mp"
-                alt="{{ $user->name }}"
-                class="w-full h-full rounded-full object-cover border-4 border-white shadow-sm"
-            />
+            @if ($user->avatar)
+                <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}" class="w-full h-full rounded-full object-cover border-4 border-white shadow-sm" />
+            @else
+                <img src="https://www.gravatar.com/avatar/{{ md5(strtolower(trim($user->email))) }}?s=200&d=mp" alt="{{ $user->name }}" class="w-full h-full rounded-full object-cover border-4 border-white shadow-sm" />
+            @endif
         </div>
         <h2 class="font-h1 text-h1 text-on-surface mb-1">{{ $user->name }}</h2>
-        <p class="font-body-lg text-body-lg text-secondary mb-4">{{ $user->email }}</p>
+        <p class="font-body-lg text-body-lg text-secondary mb-4">{{ $profile?->headline ?: $user->email }}</p>
         <div class="flex gap-3">
-            <button class="bg-primary text-on-primary font-body-sm text-body-sm py-2 px-6 rounded-xl hover:bg-primary-container transition-colors min-h-[44px] flex items-center justify-center">
+            <button wire:click="$set('showEditProfile', true)" class="bg-primary text-on-primary font-body-sm text-body-sm py-2 px-6 rounded-xl hover:bg-primary-container transition-colors min-h-[44px] flex items-center justify-center">
                 Edit Profile
             </button>
             <button class="bg-surface-container text-on-surface font-body-sm text-body-sm py-2 px-4 rounded-xl hover:bg-surface-variant transition-colors min-h-[44px] flex items-center justify-center gap-2 border border-border-subtle">
@@ -271,15 +271,15 @@
                     <span class="font-body-lg text-body-lg text-on-surface block">{{ $user->email }}</span>
                 </div>
             </div>
-            <a class="flex items-center gap-4 p-4 border-b border-border-subtle hover:bg-surface-container-lowest transition-colors group" href="#">
+            <button type="button" wire:click="$set('showChangePassword', true)" class="w-full flex items-center gap-4 p-4 border-b border-border-subtle hover:bg-surface-container-lowest transition-colors group cursor-pointer">
                 <div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant group-hover:bg-surface-container transition-colors">
                     <span class="material-symbols-outlined">lock_reset</span>
                 </div>
-                <div class="flex-1">
+                <div class="flex-1 text-left">
                     <span class="font-body-lg text-body-lg text-on-surface block">Ubah Kata Sandi</span>
                 </div>
                 <span class="material-symbols-outlined text-text-secondary">chevron_right</span>
-            </a>
+            </button>
             <a class="flex items-center gap-4 p-4 border-b border-border-subtle hover:bg-surface-container-lowest transition-colors group" href="#">
                 <div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant group-hover:bg-surface-container transition-colors">
                     <span class="material-symbols-outlined">help</span>
@@ -302,4 +302,12 @@
             </form>
         </div>
     </section>
+
+    @if ($showEditProfile)
+        <livewire:profile-edit />
+    @endif
+
+    @if ($showChangePassword)
+        <livewire:change-password />
+    @endif
 </div>

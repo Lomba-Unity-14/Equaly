@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'work_environment',
     'skills',
     'onboarding_completed',
+    'headline',
 ])]
 class UserProfile extends Model
 {
