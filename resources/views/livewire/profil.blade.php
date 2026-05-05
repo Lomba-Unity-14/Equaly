@@ -1,11 +1,21 @@
 <div class="flex flex-col gap-stack-lg">
+    @if (session('success'))
+        <div class="bg-primary-container/40 text-primary font-body-sm text-body-sm px-4 py-3 rounded-xl border border-primary/20">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <!-- Profile Card -->
     <section class="flex flex-col items-center bg-surface p-6 rounded-2xl shadow-sm border border-border-subtle text-center">
         <div class="relative w-24 h-24 mb-4">
-            <img alt="Yazid Profile Picture" class="w-full h-full rounded-full object-cover border-4 border-white shadow-sm" data-alt="A professional headshot of a young man, centered in a circular frame. He has a warm, confident smile and is wearing a smart-casual outfit. The background is softly blurred with a bright, clean, modern light-mode aesthetic, emphasizing a professional UI/UX designer persona." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCzUv-Rmaz4_7UhIla0eBNDQgZpX_vkFKfZuVuJ0CVRsqREI3oTxvz7VmX4_SsS01X3H95wVkXyyxy3V99ymiD9Zdyrh1essOYJBGj5hLu0J0LS5nWQCSVzh9zNeIrA3ViaPgjKUhQ3xOe09dR5BvmtEtQMF_d0GdCXwSGeg-xkd2Ma_4khSQJg8kCNCg6xU-siqz1K3iNqnZoL5xQ6kpMGji78Jr886ZuPRTIt0RTGk3GMmr499224f00JoJLx8VwVsSGIo8-ig"/>
+            <img
+                src="https://www.gravatar.com/avatar/{{ md5(strtolower(trim($user->email))) }}?s=200&d=mp"
+                alt="{{ $user->name }}"
+                class="w-full h-full rounded-full object-cover border-4 border-white shadow-sm"
+            />
         </div>
-        <h2 class="font-h1 text-h1 text-on-surface mb-1">Yazid</h2>
-        <p class="font-body-lg text-body-lg text-secondary mb-4">UI/UX Enthusiast</p>
+        <h2 class="font-h1 text-h1 text-on-surface mb-1">{{ $user->name }}</h2>
+        <p class="font-body-lg text-body-lg text-secondary mb-4">{{ $user->email }}</p>
         <div class="flex gap-3">
             <button class="bg-primary text-on-primary font-body-sm text-body-sm py-2 px-6 rounded-xl hover:bg-primary-container transition-colors min-h-[44px] flex items-center justify-center">
                 Edit Profile
@@ -54,38 +64,197 @@
             <h3 class="font-h2 text-h2 text-on-surface">Data Pencocokan AI</h3>
             <p class="font-body-sm text-body-sm text-text-secondary mt-1">Atribut yang digunakan untuk rekomendasi yang tepat.</p>
         </div>
+
+        <!-- Skills -->
         <div class="bg-surface rounded-2xl p-5 shadow-sm border border-border-subtle flex flex-col gap-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-secondary">psychology</span>
                     <h3 class="font-body-lg text-body-lg font-semibold text-text-primary">Keahlian</h3>
                 </div>
-                <a aria-label="Edit Keahlian" class="text-primary hover:text-surface-tint flex items-center justify-center p-1 rounded-full hover:bg-surface-container transition-colors" href="#">
-                    <span class="material-symbols-outlined">edit</span>
-                </a>
+                @unless ($editing)
+                    <button wire:click="editSection('skills')" class="text-primary hover:text-surface-tint flex items-center justify-center p-1 rounded-full hover:bg-surface-container transition-colors">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                @endunless
             </div>
 
-            <div class="flex flex-wrap gap-2">
-                <span class="bg-surface-container text-on-surface font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border border-border-subtle">Figma</span>
-                <span class="bg-surface-container text-on-surface font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border border-border-subtle">HTML</span>
-                <span class="bg-surface-container text-on-surface font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border border-border-subtle">Copywriting</span>
-            </div>
+            @if ($editing === 'skills')
+                <div class="flex flex-wrap gap-2">
+                    @forelse ($skills as $index => $skill)
+                        <span class="inline-flex items-center gap-1.5 bg-surface-container text-on-surface font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border border-border-subtle">
+                            {{ $skill }}
+                            <button type="button" wire:click="removeSkill({{ $index }})" class="text-secondary hover:text-error transition-colors">
+                                <span class="material-symbols-outlined text-[16px]">close</span>
+                            </button>
+                        </span>
+                    @empty
+                        <p class="font-body-sm text-body-sm text-secondary w-full">Belum ada keahlian.</p>
+                    @endforelse
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" wire:model="newSkill" wire:keydown.enter.prevent="addSkill"
+                        placeholder="Cth: Figma, Laravel, Copywriting"
+                        class="flex-1 px-4 py-3 rounded-xl border border-border-subtle bg-surface text-on-surface font-body-lg text-body-lg placeholder:text-secondary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                    <button type="button" wire:click="addSkill"
+                        class="px-4 py-3 rounded-xl bg-primary text-on-primary font-body-sm text-body-sm font-semibold hover:bg-primary-container transition-colors min-h-[44px] flex items-center justify-center">
+                        Tambah
+                    </button>
+                </div>
+                <div class="flex gap-2 justify-end">
+                    <button type="button" wire:click="cancelEdit"
+                        class="px-4 py-2 rounded-lg border border-border-subtle text-on-surface font-body-sm text-body-sm hover:bg-surface-container transition-colors">
+                        Batal
+                    </button>
+                    <button type="button" wire:click="saveSection('skills')"
+                        class="px-4 py-2 rounded-lg bg-primary text-on-primary font-body-sm text-body-sm font-semibold hover:bg-primary-container transition-colors">
+                        Simpan
+                    </button>
+                </div>
+            @else
+                <div class="flex flex-wrap gap-2">
+                    @forelse ($skills as $skill)
+                        <span class="bg-surface-container text-on-surface font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border border-border-subtle">{{ $skill }}</span>
+                    @empty
+                        <p class="font-body-sm text-body-sm text-secondary">Belum ada keahlian.</p>
+                    @endforelse
+                </div>
+            @endif
         </div>
 
+        <!-- Disability -->
         <div class="bg-surface rounded-2xl p-5 shadow-sm border border-border-subtle flex flex-col gap-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-secondary">hearing</span>
                     <h3 class="font-body-lg text-body-lg font-semibold text-text-primary">Disabilitas</h3>
                 </div>
-                <a aria-label="Edit Disabilitas" class="text-primary hover:text-surface-tint flex items-center justify-center p-1 rounded-full hover:bg-surface-container transition-colors" href="#">
-                    <span class="material-symbols-outlined">edit</span>
-                </a>
+                @unless ($editing)
+                    <button wire:click="editSection('disability_condition')" class="text-primary hover:text-surface-tint flex items-center justify-center p-1 rounded-full hover:bg-surface-container transition-colors">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                @endunless
             </div>
 
-            <div class="flex flex-wrap gap-2">
-                <span class="bg-surface-container text-on-surface font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border border-border-subtle">Tunarungu</span>
+            @if ($editing === 'disability_condition')
+                <div class="flex flex-wrap gap-2">
+                    @foreach ($labelMap['disability_condition'] as $value => $label)
+                        <button type="button" wire:click="toggleCondition('disability_condition', '{{ $value }}')"
+                            class="font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border transition-all cursor-pointer
+                                {{ in_array($value, $disability_condition) ? 'bg-primary-container/40 text-primary border-primary/30' : 'bg-surface-container text-on-surface border-border-subtle hover:border-primary/50' }}">
+                            {{ $label }}
+                        </button>
+                    @endforeach
+                </div>
+                <div class="flex gap-2 justify-end">
+                    <button type="button" wire:click="cancelEdit"
+                        class="px-4 py-2 rounded-lg border border-border-subtle text-on-surface font-body-sm text-body-sm hover:bg-surface-container transition-colors">
+                        Batal
+                    </button>
+                    <button type="button" wire:click="saveSection('disability_condition')"
+                        class="px-4 py-2 rounded-lg bg-primary text-on-primary font-body-sm text-body-sm font-semibold hover:bg-primary-container transition-colors">
+                        Simpan
+                    </button>
+                </div>
+            @else
+                <div class="flex flex-wrap gap-2">
+                    @forelse ($disability_condition as $value)
+                        <span class="bg-surface-container text-on-surface font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border border-border-subtle">{{ $labelMap['disability_condition'][$value] ?? $value }}</span>
+                    @empty
+                        <p class="font-body-sm text-body-sm text-secondary">Belum diisi.</p>
+                    @endforelse
+                </div>
+            @endif
+        </div>
+
+        <!-- Communication Preference -->
+        <div class="bg-surface rounded-2xl p-5 shadow-sm border border-border-subtle flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-secondary">record_voice_over</span>
+                    <h3 class="font-body-lg text-body-lg font-semibold text-text-primary">Preferensi Komunikasi</h3>
+                </div>
+                @unless ($editing)
+                    <button wire:click="editSection('communication_preference')" class="text-primary hover:text-surface-tint flex items-center justify-center p-1 rounded-full hover:bg-surface-container transition-colors">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                @endunless
             </div>
+
+            @if ($editing === 'communication_preference')
+                <div class="flex flex-wrap gap-2">
+                    @foreach ($labelMap['communication_preference'] as $value => $label)
+                        <button type="button" wire:click="toggleCondition('communication_preference', '{{ $value }}')"
+                            class="font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border transition-all cursor-pointer
+                                {{ in_array($value, $communication_preference) ? 'bg-primary-container/40 text-primary border-primary/30' : 'bg-surface-container text-on-surface border-border-subtle hover:border-primary/50' }}">
+                            {{ $label }}
+                        </button>
+                    @endforeach
+                </div>
+                <div class="flex gap-2 justify-end">
+                    <button type="button" wire:click="cancelEdit"
+                        class="px-4 py-2 rounded-lg border border-border-subtle text-on-surface font-body-sm text-body-sm hover:bg-surface-container transition-colors">
+                        Batal
+                    </button>
+                    <button type="button" wire:click="saveSection('communication_preference')"
+                        class="px-4 py-2 rounded-lg bg-primary text-on-primary font-body-sm text-body-sm font-semibold hover:bg-primary-container transition-colors">
+                        Simpan
+                    </button>
+                </div>
+            @else
+                <div class="flex flex-wrap gap-2">
+                    @forelse ($communication_preference as $value)
+                        <span class="bg-surface-container text-on-surface font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border border-border-subtle">{{ $labelMap['communication_preference'][$value] ?? $value }}</span>
+                    @empty
+                        <p class="font-body-sm text-body-sm text-secondary">Belum diisi.</p>
+                    @endforelse
+                </div>
+            @endif
+        </div>
+
+        <!-- Work Environment -->
+        <div class="bg-surface rounded-2xl p-5 shadow-sm border border-border-subtle flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-secondary">business_center</span>
+                    <h3 class="font-body-lg text-body-lg font-semibold text-text-primary">Lingkungan Kerja</h3>
+                </div>
+                @unless ($editing)
+                    <button wire:click="editSection('work_environment')" class="text-primary hover:text-surface-tint flex items-center justify-center p-1 rounded-full hover:bg-surface-container transition-colors">
+                        <span class="material-symbols-outlined">edit</span>
+                    </button>
+                @endunless
+            </div>
+
+            @if ($editing === 'work_environment')
+                <div class="flex flex-wrap gap-2">
+                    @foreach ($labelMap['work_environment'] as $value => $label)
+                        <button type="button" wire:click="toggleCondition('work_environment', '{{ $value }}')"
+                            class="font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border transition-all cursor-pointer
+                                {{ in_array($value, $work_environment) ? 'bg-primary-container/40 text-primary border-primary/30' : 'bg-surface-container text-on-surface border-border-subtle hover:border-primary/50' }}">
+                            {{ $label }}
+                        </button>
+                    @endforeach
+                </div>
+                <div class="flex gap-2 justify-end">
+                    <button type="button" wire:click="cancelEdit"
+                        class="px-4 py-2 rounded-lg border border-border-subtle text-on-surface font-body-sm text-body-sm hover:bg-surface-container transition-colors">
+                        Batal
+                    </button>
+                    <button type="button" wire:click="saveSection('work_environment')"
+                        class="px-4 py-2 rounded-lg bg-primary text-on-primary font-body-sm text-body-sm font-semibold hover:bg-primary-container transition-colors">
+                        Simpan
+                    </button>
+                </div>
+            @else
+                <div class="flex flex-wrap gap-2">
+                    @forelse ($work_environment as $value)
+                        <span class="bg-surface-container text-on-surface font-label-caps text-label-caps px-2.5 py-1.5 rounded-md border border-border-subtle">{{ $labelMap['work_environment'][$value] ?? $value }}</span>
+                    @empty
+                        <p class="font-body-sm text-body-sm text-secondary">Belum diisi.</p>
+                    @endforelse
+                </div>
+            @endif
         </div>
     </section>
 
@@ -93,6 +262,15 @@
     <section class="space-y-stack-sm pb-4">
         <h3 class="font-h2 text-h2 text-on-surface px-1">Akun & Bantuan</h3>
         <div class="bg-surface rounded-2xl border border-border-subtle shadow-sm overflow-hidden flex flex-col">
+            <div class="flex items-center gap-4 p-4 border-b border-border-subtle">
+                <div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant">
+                    <span class="material-symbols-outlined">mail</span>
+                </div>
+                <div class="flex-1">
+                    <span class="font-body-sm text-body-sm text-secondary">Email</span>
+                    <span class="font-body-lg text-body-lg text-on-surface block">{{ $user->email }}</span>
+                </div>
+            </div>
             <a class="flex items-center gap-4 p-4 border-b border-border-subtle hover:bg-surface-container-lowest transition-colors group" href="#">
                 <div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant group-hover:bg-surface-container transition-colors">
                     <span class="material-symbols-outlined">lock_reset</span>
