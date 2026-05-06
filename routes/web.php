@@ -6,6 +6,7 @@ use App\Livewire\Beranda;
 use App\Livewire\DetailLowongan;
 use App\Livewire\Edukasi;
 use App\Livewire\Lowongan;
+use App\Livewire\Matching;
 use App\Livewire\Onboarding;
 use App\Livewire\Profil;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,7 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
 
     Route::get('/profil', Profil::class)->name('profil');
     Route::get('/', Beranda::class)->name('beranda');
+    Route::get('/matching', Matching::class)->name('matching');
 });
 
 Route::get('/lowongan', Lowongan::class)->name('lowongan');

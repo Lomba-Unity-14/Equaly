@@ -108,6 +108,9 @@ class Profil extends Component
                 ['user_id' => auth()->id()],
                 [...$data, 'onboarding_completed' => true],
             );
+
+            \Illuminate\Support\Facades\Cache::put('matching_status_' . auth()->id(), 'processing', now()->addMinutes(10));
+            \App\Jobs\MatchUserToJobs::dispatch(auth()->id());
         }
 
         $this->profile = auth()->user()->profile;

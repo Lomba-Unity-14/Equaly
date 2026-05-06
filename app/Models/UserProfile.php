@@ -32,4 +32,9 @@ class UserProfile extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function matches(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasManyThrough(JobUserMatch::class, User::class, 'id', 'user_id', 'user_id', 'id');
+    }
 }

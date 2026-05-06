@@ -21,5 +21,8 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class JobVacancyData extends Model
 {
-    //
+    public function matches(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(JobUserMatch::class);
+    }
 }
