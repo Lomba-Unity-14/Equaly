@@ -31,6 +31,8 @@ class Profil extends Component
 
     public string $newSkill = '';
 
+    public bool $needsRematch = false;
+
     public function mount(): void
     {
         $this->user = auth()->user();
@@ -109,8 +111,7 @@ class Profil extends Component
                 [...$data, 'onboarding_completed' => true],
             );
 
-            \Illuminate\Support\Facades\Cache::put('matching_status_' . auth()->id(), 'processing', now()->addMinutes(10));
-            \App\Jobs\MatchUserToJobs::dispatch(auth()->id());
+            $this->needsRematch = true;
         }
 
         $this->profile = auth()->user()->profile;
@@ -142,6 +143,13 @@ class Profil extends Component
             $this->communication_preference = $this->profile->communication_preference ?? [];
             $this->work_environment = $this->profile->work_environment ?? [];
         }
+    }
+
+    public function rematch(): void
+    {
+        \Illuminate\Support\Facades\Cache::put('matching_status_' . auth()->id(), 'processing', now()->addMinutes(10));
+        (new \App\Jobs\MatchUserToJobs(auth()->id()))->handle();
+        $this->redirect(route('matching'), navigate: true);
     }
 
     #[On('password-changed')]

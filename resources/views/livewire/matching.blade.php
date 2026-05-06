@@ -10,8 +10,18 @@
 
         <h1 class="font-h1 text-h1 text-text-primary mb-2">AI Sedang Bekerja</h1>
         <h2 class="font-h2 text-h2 text-text-primary mb-3">Mencocokkan pekerjaan untukmu<span class="dots"></span></h2>
-        <p class="font-body-sm text-body-sm text-text-secondary max-w-xs">
-            AI kami sedang menganalisis profilmu dan mencocokkannya dengan lowongan yang tersedia. Proses ini hanya perlu beberapa saat.
+
+        @php
+            $progressMessages = [
+                'Mencari database lowongan terbaru...',
+                'Menganalisis profil dan skill kamu...',
+                'Mencocokkan kesesuaian pekerjaan...',
+                'Menilai aksesibilitas lingkungan kerja...',
+                'Menyusun hasil rekomendasi terbaik...',
+            ];
+        @endphp
+        <p class="font-body-sm text-body-sm text-text-secondary max-w-xs mb-6 transition-opacity duration-500">
+            {{ $progressMessages[$progressStep] }}
         </p>
 
         <div class="mt-8 flex items-center gap-2 text-text-secondary font-label-caps text-label-caps">

@@ -14,6 +14,8 @@ class Matching extends Component
 {
     public string $status = 'processing';
 
+    public int $progressStep = 0;
+
     protected const TIMEOUT_SECONDS = 90;
 
     protected ?int $startedAt = null;
@@ -38,6 +40,8 @@ class Matching extends Component
 
     public function checkStatus(): void
     {
+        $this->progressStep = ($this->progressStep + 1) % 5;
+
         $cacheKey = 'matching_status_' . auth()->id();
         $cached = Cache::get($cacheKey);
 

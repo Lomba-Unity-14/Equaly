@@ -4,37 +4,28 @@ namespace App\Jobs;
 
 use App\Models\JobVacancyData;
 use App\Models\User;
-use App\Services\DeepseekService;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
-class MatchUserToJobs implements ShouldQueue
+class MatchUserToJobs
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    public $tries = 3;
-
-    public $backoff = 5;
-
     public function __construct(
         protected int $userId
     ) {}
 
-    public function handle(DeepseekService $ai): void
+    public function handle(): void
     {
-        $cacheKey = "matching_status_{$this->userId}";
+        $uid = $this->userId;
+        $statusKey = "matching_status_{$uid}";
+        $doneKey = "matching_done_{$uid}";
+        $totalKey = "matching_total_{$uid}";
 
         try {
-            $user = User::with('profile')->find($this->userId);
+            $user = User::with('profile')->find($uid);
 
             if (! $user || ! $user->profile) {
-                Log::warning("MatchUserToJobs: user or profile not found for ID {$this->userId}");
-                Cache::put($cacheKey, 'failed', now()->addHours(1));
+                Log::warning("MatchUserToJobs: user or profile not found for ID {$uid}");
+                Cache::put($statusKey, 'failed', now()->addHours(1));
 
                 return;
             }
@@ -49,53 +40,35 @@ class MatchUserToJobs implements ShouldQueue
             ];
 
             $jobs = JobVacancyData::all();
-
             $filteredJobs = $this->preFilter($userProfile, $jobs);
 
-            Cache::put($cacheKey, 'processing', now()->addMinutes(10));
+            Log::info("MatchUserToJobs: user {$uid} — {$jobs->count()} jobs → " . count($filteredJobs) . " after pre-filter");
 
-            $batches = array_chunk($filteredJobs, 5);
+            $batches = array_chunk($filteredJobs, 10);
 
-            foreach ($batches as $batch) {
-                $results = $ai->matchUserToJobs($userProfile, $batch);
+            if (empty($batches)) {
+                Cache::put($statusKey, 'completed', now()->addHours(24));
+                Cache::forget($doneKey);
+                Cache::forget($totalKey);
 
-                foreach ($results as $result) {
-                    if (empty($result['id'])) {
-                        continue;
-                    }
-
-                    $jobId = (int) $result['id'];
-
-                    $jobExists = $jobs->firstWhere('id', $jobId);
-                    if (! $jobExists) {
-                        continue;
-                    }
-
-                    \App\Models\JobUserMatch::updateOrCreate(
-                        [
-                            'job_vacancy_data_id' => $jobId,
-                            'user_id' => $this->userId,
-                        ],
-                        [
-                            'match_score' => (int) ($result['match_score'] ?? 0),
-                            'is_match' => ! empty($result['is_match']),
-                            'disability_score' => (int) ($result['disability_score'] ?? 0),
-                            'skill_score' => (int) ($result['skill_score'] ?? 0),
-                            'environment_score' => (int) ($result['environment_score'] ?? 0),
-                            'communication_score' => (int) ($result['communication_score'] ?? 0),
-                            'education_score' => (int) ($result['education_score'] ?? 0),
-                            'match_reason' => $result['match_reason'] ?? null,
-                            'calculated_at' => now(),
-                        ]
-                    );
-                }
+                return;
             }
 
-            Cache::put($cacheKey, 'completed', now()->addHours(24));
+            Cache::put($statusKey, 'processing', now()->addMinutes(10));
+            Cache::put($doneKey, 0, now()->addMinutes(10));
+            Cache::put($totalKey, count($batches), now()->addMinutes(10));
+
+            \App\Models\JobUserMatch::where('user_id', $uid)->delete();
+
+            foreach ($batches as $i => $batch) {
+                MatchBatchJob::dispatch($uid, $userProfile, $batch, $i);
+            }
 
         } catch (\Throwable $e) {
-            Log::error("MatchUserToJobs failed for user {$this->userId}: {$e->getMessage()}");
-            Cache::put($cacheKey, 'failed', now()->addHours(1));
+            Log::error("MatchUserToJobs failed for user {$uid}: {$e->getMessage()}");
+            Cache::put($statusKey, 'failed', now()->addHours(1));
+            Cache::forget($doneKey);
+            Cache::forget($totalKey);
 
             throw $e;
         }
@@ -106,7 +79,7 @@ class MatchUserToJobs implements ShouldQueue
         $workEnvMap = [
             'remote' => ['Remote', 'WFH', 'Work From Home'],
             'hybrid' => ['Hybrid'],
-            'onsite' => ['On-site', 'On site', 'Full time'],
+            'onsite' => ['On-site', 'On site', 'Full time', 'Full-time', 'Fulltime'],
         ];
 
         $preferredEnvs = [];
@@ -115,18 +88,39 @@ class MatchUserToJobs implements ShouldQueue
             $preferredEnvs = array_merge($preferredEnvs, $workEnvMap[$env] ?? []);
         }
 
-        if (empty($preferredEnvs)) {
-            return $jobs->toArray();
-        }
+        $userSkills = array_filter(array_map(function ($s) {
+            $s = strtolower(trim($s));
 
-        $filtered = $jobs->filter(function ($job) use ($preferredEnvs) {
-            foreach ($preferredEnvs as $term) {
-                if (stripos($job->work_type ?? '', $term) !== false) {
-                    return true;
+            return strlen($s) >= 3 ? $s : null;
+        }, $userProfile['skills'] ?? []));
+
+        $filtered = $jobs->filter(function ($job) use ($preferredEnvs, $userSkills) {
+            $workMatch = false;
+            if (empty($preferredEnvs)) {
+                $workMatch = true;
+            } else {
+                foreach ($preferredEnvs as $term) {
+                    if (stripos($job->work_type ?? '', $term) !== false) {
+                        $workMatch = true;
+                        break;
+                    }
                 }
             }
 
-            return false;
+            $skillMatch = false;
+            if (empty($userSkills) || empty($job->skill_req)) {
+                $skillMatch = empty($userSkills);
+            } else {
+                $reqLower = strtolower($job->skill_req);
+                foreach ($userSkills as $skill) {
+                    if (str_contains($reqLower, $skill)) {
+                        $skillMatch = true;
+                        break;
+                    }
+                }
+            }
+
+            return $workMatch || $skillMatch;
         });
 
         return $filtered->values()->toArray();

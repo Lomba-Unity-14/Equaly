@@ -65,6 +65,19 @@
             <p class="font-body-sm text-body-sm text-text-secondary mt-1">Atribut yang digunakan untuk rekomendasi yang tepat.</p>
         </div>
 
+        @if($needsRematch)
+        <div class="bg-primary-container/30 rounded-2xl p-4 border border-primary/20 flex items-center gap-3">
+            <span class="material-symbols-outlined text-[28px] text-primary shrink-0" style="font-variation-settings: 'FILL' 1;">sync</span>
+            <div class="flex-1">
+                <p class="font-body-sm text-body-sm text-on-primary-container font-semibold">Profil kamu berubah</p>
+                <p class="font-label-caps text-label-caps text-on-primary-container/70">Perbarui pencocokan lowongan agar rekomendasi lebih akurat.</p>
+            </div>
+            <button wire:click="rematch" class="bg-primary text-on-primary font-label-caps text-label-caps py-2.5 px-4 rounded-xl hover:bg-primary-fixed-variant transition-all shrink-0 min-h-[44px] flex items-center justify-center shadow-sm active:scale-95">
+                Cocokkan Ulang
+            </button>
+        </div>
+        @endif
+
         <!-- Skills -->
         <div class="bg-surface rounded-2xl p-5 shadow-sm border border-border-subtle flex flex-col gap-4">
             <div class="flex items-center justify-between">
