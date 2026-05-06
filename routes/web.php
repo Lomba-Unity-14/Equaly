@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Livewire\Beranda;
 use App\Livewire\DetailLowongan;
 use App\Livewire\Edukasi;
+use App\Livewire\HistoriLamaran;
 use App\Livewire\Lowongan;
 use App\Livewire\Matching;
 use App\Livewire\Onboarding;
@@ -31,3 +32,7 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
 Route::get('/lowongan', Lowongan::class)->name('lowongan');
 Route::get('/lowongan/{lowongan}', DetailLowongan::class)->name('lowongan.detail');
 Route::get('/edukasi', Edukasi::class)->name('edukasi');
+
+Route::middleware(['auth', 'onboarding'])->group(function () {
+    Route::get('/histori', HistoriLamaran::class)->name('histori.lamaran');
+});

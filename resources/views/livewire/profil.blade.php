@@ -28,35 +28,53 @@
     </section>
 
     <!-- Company Reviews -->
-    <section class="space-y-stack-sm">
+    <a href="{{ route('histori.lamaran') }}" wire:navigate class="block space-y-stack-sm">
         <div class="flex items-center justify-between px-1">
-            <h3 class="font-h2 text-h2 text-on-surface">Beri Ulasan Perusahaan</h3>
-            <span class="bg-secondary-container text-on-secondary-container font-label-caps text-label-caps px-3 py-1 rounded-full">1 Tertunda</span>
+            <h3 class="font-h2 text-h2 text-on-surface">Histori Lamaran</h3>
+            @if($pendingCount > 0)
+                <span class="bg-secondary-container text-on-secondary-container font-label-caps text-label-caps px-3 py-1 rounded-full">{{ $pendingCount }} tertunda</span>
+            @endif
         </div>
         <div class="bg-surface rounded-2xl border border-border-subtle shadow-sm p-4 space-y-4">
-            <div class="flex items-start gap-4">
-                <div class="w-14 h-14 rounded-xl bg-surface-container-low flex items-center justify-center overflow-hidden shrink-0 border border-border-subtle">
-                    <img alt="Company Logo placeholder" class="w-full h-full object-cover opacity-90" data-alt="A close-up, abstract architectural view of a modern glass office building facade reflecting a bright, clear blue sky. The structural lines are sharp, geometric, and precise, conveying a sense of corporate stability and innovation. The visual style is minimal and high-contrast, fitting perfectly within a clean, light-mode interface relying on cool blues and crisp whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmQgPVnzRUuxIShfla69AcH6n0bUeVIKptkRyodg39JsvDGiADfMyydywQx-CEVDVgMX3lu5mjTZvl3NE6EeZexUltIBgvTnsZGAINg-y8tASJWjWI0lZAE371kmVlQmTexhehcXKv9RTbIyRntEzNi6_rjROgi5yEy91zKFLy9NKFNdow6LbyjWeJxAlaqckTtyoVLb2HIdi8eWUODgltzHqG_sXId1usaqTJMZGq2sXaWrdCgRDwuYkZSADz7xWn2ERTgQgK3w"/>
-                </div>
-                <div class="flex-1">
-                    <h4 class="font-body-lg text-body-lg font-semibold text-on-surface">FinTech Nusantara</h4>
-                    <p class="font-body-sm text-body-sm text-text-secondary mb-2">Terakhir aktif: 2 minggu lalu</p>
-                    <div class="flex items-center gap-1 text-surface-dim">
-                        <span class="material-symbols-outlined text-[18px] text-tertiary-container" style="font-variation-settings: 'FILL' 1;">star</span>
-                        <span class="material-symbols-outlined text-[18px] text-tertiary-container" style="font-variation-settings: 'FILL' 1;">star</span>
-                        <span class="material-symbols-outlined text-[18px] text-tertiary-container" style="font-variation-settings: 'FILL' 1;">star</span>
-                        <span class="material-symbols-outlined text-[18px] text-tertiary-container" style="font-variation-settings: 'FILL' 1;">star</span>
-                        <span class="material-symbols-outlined text-[18px]">star</span>
-                        <span class="ml-2 font-label-caps text-label-caps text-text-secondary">INKLUSIVITAS</span>
+            @if($latestApplication)
+                @php $job = $latestApplication->jobVacancyData; @endphp
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center shrink-0 overflow-hidden border border-border-subtle">
+                        @if($job && $job->image_logo_url)
+                            <img src="{{ $job->image_logo_url }}" alt="{{ $latestApplication->company_name }}" class="w-full h-full object-cover">
+                        @else
+                            <span class="material-symbols-outlined text-secondary">domain</span>
+                        @endif
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-body-lg text-body-lg font-semibold text-on-surface">{{ $job->job_title ?? 'Lowongan' }}</h4>
+                        <p class="font-body-sm text-body-sm text-text-secondary">{{ $latestApplication->company_name ?? 'Perusahaan' }}</p>
+                        <p class="font-label-caps text-label-caps text-outline mt-1">{{ $latestApplication->applied_at?->diffForHumans() ?? '-' }}</p>
                     </div>
                 </div>
-            </div>
-            <button class="w-full bg-primary text-on-primary font-body-lg text-body-lg font-semibold rounded-xl py-3 px-4 flex items-center justify-center gap-2 hover:bg-on-primary-fixed-variant transition-colors">
-                <span class="material-symbols-outlined text-[20px]">edit_square</span>
-                Tulis Ulasan
+                @if($latestApplication->review)
+                    <div class="bg-primary-container/20 rounded-xl p-3 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary shrink-0" style="font-variation-settings: 'FILL' 1;">verified</span>
+                        <p class="font-body-sm text-body-sm text-on-primary-container">Ulasan telah diberikan &middot; {{ $latestApplication->review->is_friendly ? 'Ramah disabilitas' : 'Kurang ramah' }}</p>
+                    </div>
+                @else
+                    <div class="bg-surface-container-low rounded-xl p-3 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-warning shrink-0">pending</span>
+                        <p class="font-body-sm text-body-sm text-text-secondary">Belum diberikan ulasan</p>
+                    </div>
+                @endif
+            @else
+                <div class="text-center py-2">
+                    <span class="material-symbols-outlined text-[32px] text-outline mb-2">history</span>
+                    <p class="font-body-sm text-body-sm text-text-secondary">Belum ada lamaran.</p>
+                </div>
+            @endif
+            <button class="w-full bg-primary text-on-primary font-body-sm text-body-sm font-semibold rounded-xl py-3 px-4 flex items-center justify-center gap-2 hover:bg-primary-fixed-variant transition-colors min-h-[48px]">
+                <span class="material-symbols-outlined text-[20px]">list_alt</span>
+                Lihat Semua Lamaran
             </button>
         </div>
-    </section>
+    </a>
 
     <!-- AI Matching Data -->
     <section class="flex flex-col gap-3">

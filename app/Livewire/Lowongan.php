@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\CompanyReview;
 use App\Models\JobUserMatch;
 use App\Models\JobVacancyData;
 use Livewire\Attributes\Layout;
@@ -34,8 +35,17 @@ class Lowongan extends Component
             }
         }
 
+        $companyNames = $matches->pluck('jobVacancyData.company')->filter()->unique();
+
+        $companyAggregates = CompanyReview::whereIn('company_name', $companyNames)
+            ->selectRaw("company_name, count(*) as total, sum(case when is_friendly = 1 then 1 else 0 end) as friendly")
+            ->groupBy('company_name')
+            ->get()
+            ->keyBy('company_name');
+
         return view('livewire.lowongan', [
             'matches' => $matches,
+            'companyAggregates' => $companyAggregates,
         ]);
     }
 }

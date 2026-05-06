@@ -160,8 +160,19 @@ class Profil extends Component
 
     public function render()
     {
+        $latestApplication = \App\Models\JobApplication::with(['jobVacancyData', 'review'])
+            ->where('user_id', auth()->id())
+            ->orderByDesc('applied_at')
+            ->first();
+
+        $pendingCount = \App\Models\JobApplication::where('user_id', auth()->id())
+            ->whereDoesntHave('review')
+            ->count();
+
         return view('livewire.profil', [
             'labelMap' => $this->labels(),
+            'latestApplication' => $latestApplication,
+            'pendingCount' => $pendingCount,
         ]);
     }
 

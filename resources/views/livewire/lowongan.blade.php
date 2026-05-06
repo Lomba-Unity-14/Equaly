@@ -49,6 +49,14 @@
                         @if($job->work_type)
                             <x-badge icon="schedule" :text="$job->work_type" />
                         @endif
+                        @php $agg = $companyAggregates[$job->company] ?? null; @endphp
+                        @if($agg && $agg->total > 0)
+                            @php
+                                $pct = round(($agg->friendly / $agg->total) * 100);
+                                $isFriendly = $pct >= 50;
+                            @endphp
+                            <x-badge icon="{{ $isFriendly ? 'diversity_3' : 'warning' }}" :text="$isFriendly ? 'Ramah Disabilitas' : 'Kurang Ramah'" :variant="$isFriendly ? 'high' : 'low'" />
+                        @endif
                     </div>
                 </article>
             </a>

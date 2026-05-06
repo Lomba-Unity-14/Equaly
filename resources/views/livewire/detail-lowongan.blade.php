@@ -107,4 +107,47 @@
         <p class="font-body-lg text-body-lg text-text-secondary">{{ $job->education_req }}</p>
     </x-detail-section>
     @endif
+
+    @if(!empty($companyScore) && $companyScore['total'] > 0)
+    <x-detail-section title="Skor Perusahaan">
+        <div class="flex items-center gap-3 mb-4">
+            @if($companyScore['score'] >= 50)
+                <div class="bg-score-high-bg text-score-high-text font-label-caps text-label-caps px-3 py-1.5 rounded-full inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    Ramah Disabilitas
+                </div>
+            @else
+                <div class="bg-score-low-bg text-score-low-text font-label-caps text-label-caps px-3 py-1.5 rounded-full inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+                    Kurang Ramah Disabilitas
+                </div>
+            @endif
+            <span class="font-body-sm text-body-sm text-outline">{{ $companyScore['total'] }} ulasan</span>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            @foreach(array_slice($companyReviews, 0, 5) as $review)
+                <div class="bg-surface-container-low rounded-xl p-3">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="font-body-sm text-body-sm font-semibold text-text-primary">{{ $review['user']['name'] ?? 'Anonim' }}</span>
+                        <span class="font-label-caps text-label-caps {{ $review['is_accepted'] ? 'text-score-high-text' : 'text-text-secondary' }}">
+                            {{ $review['is_accepted'] ? 'Diterima' : 'Belum diterima' }}
+                        </span>
+                    </div>
+                    @if($review['experience'])
+                        <p class="font-body-sm text-body-sm text-text-secondary">{{ $review['experience'] }}</p>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    </x-detail-section>
+    @endif
+
+    <div class="mt-6 mb-2">
+        <button wire:click="apply"
+            class="w-full flex items-center justify-center bg-primary text-on-primary rounded-xl py-3 px-8 font-label-caps text-label-caps font-bold active:scale-[0.98] transition-all hover:bg-primary-fixed-variant min-h-[48px] shadow-md">
+            <span class="material-symbols-outlined mr-2">send</span>
+            Lamar Sekarang
+        </button>
+    </div>
 </div>
