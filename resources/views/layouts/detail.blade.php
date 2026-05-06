@@ -32,18 +32,9 @@
             <h1 class="ml-4 font-body-lg text-body-lg font-semibold text-text-primary">Detail Lowongan</h1>
         </header>
 
-        <main class="pt-22 px-gutter pb-28 flex flex-col">
+        <main class="pt-22 px-gutter pb-4 flex flex-col">
             {{ $slot }}
         </main>
-
-        <div
-            class="fixed bottom-0 left-0 right-0 w-full max-w-container-max mx-auto z-50 bg-surface border-t border-border-subtle px-4 py-3">
-            <button
-                class="w-full flex items-center justify-center bg-primary text-on-primary rounded-xl py-3 px-8 font-label-caps text-label-caps font-bold active:scale-[0.98] transition-all hover:bg-primary-fixed-variant min-h-[48px]">
-                <span class="material-symbols-outlined mr-2">send</span>
-                Lamar Sekarang
-            </button>
-        </div>
 
     </div>
 </body>

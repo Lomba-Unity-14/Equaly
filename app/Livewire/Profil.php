@@ -31,6 +31,8 @@ class Profil extends Component
 
     public string $newSkill = '';
 
+    public bool $needsRematch = false;
+
     public function mount(): void
     {
         $this->user = auth()->user();
@@ -108,6 +110,8 @@ class Profil extends Component
                 ['user_id' => auth()->id()],
                 [...$data, 'onboarding_completed' => true],
             );
+
+            $this->needsRematch = true;
         }
 
         $this->profile = auth()->user()->profile;
@@ -141,6 +145,13 @@ class Profil extends Component
         }
     }
 
+    public function rematch(): void
+    {
+        \Illuminate\Support\Facades\Cache::put('matching_status_' . auth()->id(), 'processing', now()->addMinutes(10));
+        (new \App\Jobs\MatchUserToJobs(auth()->id()))->handle();
+        $this->redirect(route('matching'), navigate: true);
+    }
+
     #[On('password-changed')]
     public function passwordChanged(): void
     {
@@ -149,8 +160,19 @@ class Profil extends Component
 
     public function render()
     {
+        $latestApplication = \App\Models\JobApplication::with(['jobVacancyData', 'review'])
+            ->where('user_id', auth()->id())
+            ->orderByDesc('applied_at')
+            ->first();
+
+        $pendingCount = \App\Models\JobApplication::where('user_id', auth()->id())
+            ->whereDoesntHave('review')
+            ->count();
+
         return view('livewire.profil', [
             'labelMap' => $this->labels(),
+            'latestApplication' => $latestApplication,
+            'pendingCount' => $pendingCount,
         ]);
     }
 

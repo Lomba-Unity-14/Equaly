@@ -81,8 +81,11 @@ class Onboarding extends Component
             ]
         );
 
+        \Illuminate\Support\Facades\Cache::put('matching_status_' . auth()->id(), 'processing', now()->addMinutes(10));
+        (new \App\Jobs\MatchUserToJobs(auth()->id()))->handle();
+
         session()->flash('success', 'Profil berhasil dilengkapi!');
-        $this->redirect(route('beranda'), navigate: true);
+        $this->redirect(route('matching'), navigate: true);
     }
 
     protected function validateCurrentStep(): void

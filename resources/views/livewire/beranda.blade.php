@@ -1,6 +1,6 @@
 <div class ="flex flex-col gap-stack-lg">
     <div>
-        <h1 class="font-h1 text-h1 text-text-primary mb-1">Halo, Yazid</h1>
+        <h1 class="font-h1 text-h1 text-text-primary mb-1">Halo, {{ $user->name }}</h1>
         <p class="font-body-sm text-body-sm text-text-secondary">Siap mencari peluang baru hari ini?</p>
     </div>
 
@@ -33,55 +33,52 @@
     <section class="flex flex-col gap-stack-md">
         <h2 class="font-h2 text-h2 text-text-primary">Rekomendasi Untukmu</h2>
 
-        <a href="/lowongan/ui-designer-tech-accessibility" wire:navigate>
-            <article
-                class="bg-surface rounded-2xl border border-border-subtle shadow-sm p-4 hover:shadow-md transition-shadow">
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-secondary">domain</span>
+        @forelse($matches as $match)
+            @php $job = $match->jobVacancyData; @endphp
+            <a href="{{ route('lowongan.detail', $job->id) }}" wire:navigate>
+                <article
+                    class="bg-surface rounded-2xl border border-border-subtle shadow-sm p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0 overflow-hidden">
+                            @if($job->image_logo_url)
+                                <img src="{{ $job->image_logo_url }}" alt="{{ $job->company }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\'material-symbols-outlined text-secondary\'>domain</span>'">
+                            @else
+                                <span class="material-symbols-outlined text-secondary">domain</span>
+                            @endif
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-body-lg text-body-lg font-semibold text-text-primary">{{ $job->job_title }}</h3>
+                            <p class="font-body-sm text-body-sm text-text-secondary">{{ $job->company ?? 'Perusahaan Rahasia' }}</p>
+                        </div>
                     </div>
-                    <div class="flex-1">
-                        <h3 class="font-body-lg text-body-lg font-semibold text-text-primary">UI Designer</h3>
-                        <p class="font-body-sm text-body-sm text-text-secondary">Tech Accessibility Corp</p>
+                    <div class="flex flex-wrap gap-2">
+                        @php
+                            $scoreVariant = $match->match_score >= 75 ? 'high' : ($match->match_score >= 60 ? 'medium' : 'low');
+                            $scoreIcon = $match->match_score >= 75 ? 'check_circle' : ($match->match_score >= 60 ? 'info' : 'warning');
+                        @endphp
+                        <x-badge :icon="$scoreIcon" :text="'Match: ' . $match->match_score . '%'" :variant="$scoreVariant" />
+                        @if($job->work_type)
+                            <x-badge icon="schedule" :text="$job->work_type" />
+                        @endif
+                        @php $agg = $companyAggregates[$job->company] ?? null; @endphp
+                        @if($agg && $agg->total > 0)
+                            @php
+                                $pct = round(($agg->friendly / $agg->total) * 100);
+                                $isFriendly = $pct >= 50;
+                            @endphp
+                            <x-badge icon="{{ $isFriendly ? 'diversity_3' : 'warning' }}" :text="$isFriendly ? 'Ramah Disabilitas' : 'Kurang Ramah'" :variant="$isFriendly ? 'high' : 'low'" />
+                        @endif
                     </div>
+                </article>
+            </a>
+        @empty
+            <div class="text-center py-12">
+                <div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-outlined text-[32px] text-outline">search_off</span>
                 </div>
-                <div class="flex flex-wrap gap-2 mb-4">
-                    <div class="inline-flex items-center gap-1 bg-score-high-bg px-3 py-1.5 rounded-full">
-                        <span class="material-symbols-outlined text-[16px] text-score-high-text"
-                            style="font-variation-settings: 'FILL' 1;">check_circle</span>
-                        <span class="font-label-caps text-label-caps text-score-high-text">Disability-Friendly: High</span>
-                    </div>
-                    <div class="inline-flex items-center px-3 py-1.5 bg-surface-container-low rounded-full">
-                        <span class="font-label-caps text-label-caps text-on-surface-variant">Remote</span>
-                    </div>
-                </div>
-            </article>
-        </a>
-
-        <a href="/lowongan/ux-researcher-inclusive-design" wire:navigate>
-            <article
-                class="bg-surface rounded-2xl border border-border-subtle shadow-sm p-4 hover:shadow-md transition-shadow">
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-secondary">business_center</span>
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="font-body-lg text-body-lg font-semibold text-text-primary">UX Researcher</h3>
-                        <p class="font-body-sm text-body-sm text-text-secondary">Inclusive Design Studio</p>
-                    </div>
-                </div>
-                <div class="flex flex-wrap gap-2 mb-4">
-                    <div class="inline-flex items-center gap-1 bg-score-medium-bg px-3 py-1.5 rounded-full">
-                        <span class="material-symbols-outlined text-[16px] text-score-medium-text"
-                            style="font-variation-settings: 'FILL' 1;">info</span>
-                        <span class="font-label-caps text-label-caps text-score-medium-text">Disability-Friendly:
-                            Medium</span>
-                    </div>
-                    <div class="inline-flex items-center px-3 py-1.5 bg-surface-container-low rounded-full">
-                        <span class="font-label-caps text-label-caps text-on-surface-variant">On-site</span>
-                    </div>
-                </div>
-            </article>
-        </a>
+                <p class="font-body-lg text-body-lg text-text-secondary mb-1">Belum ada rekomendasi</p>
+                <p class="font-body-sm text-body-sm text-outline">Coba lengkapi profilmu agar lowongan yang cocok muncul di sini.</p>
+            </div>
+        @endforelse
     </section>
 </div>
