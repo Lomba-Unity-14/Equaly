@@ -35,6 +35,8 @@ class JobVacancyDataSeeder extends Seeder
 
         $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
 
+        JobVacancyData::truncate();
+
         $rows = [];
         $columns = [
             'url', 'company', 'location', 'job_title', 'jobdesk',
