@@ -24,7 +24,7 @@ class Matching extends Component
     {
         $this->startedAt = time();
 
-        $cacheKey = 'matching_status_' . auth()->id();
+        $cacheKey = 'matching_status_'.auth()->id();
         $cached = Cache::get($cacheKey);
 
         if ($cached === 'completed') {
@@ -42,7 +42,7 @@ class Matching extends Component
     {
         $this->progressStep = ($this->progressStep + 1) % 5;
 
-        $cacheKey = 'matching_status_' . auth()->id();
+        $cacheKey = 'matching_status_'.auth()->id();
         $cached = Cache::get($cacheKey);
 
         if ($cached === 'completed') {
@@ -75,7 +75,7 @@ class Matching extends Component
 
     protected function dispatchJob(): void
     {
-        Cache::put('matching_status_' . auth()->id(), 'processing', now()->addMinutes(10));
+        Cache::put('matching_status_'.auth()->id(), 'processing', now()->addMinutes(10));
         MatchUserToJobs::dispatch(auth()->id());
     }
 

@@ -2,13 +2,26 @@
 
 namespace App\Jobs;
 
+use App\Data\OnboardingData;
+use App\Models\JobUserMatch;
 use App\Models\JobVacancyData;
 use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
-class MatchUserToJobs
+class MatchUserToJobs implements ShouldQueue
 {
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public $tries = 1;
+
+    public $timeout = 600;
+
     public function __construct(
         protected int $userId
     ) {}
@@ -31,18 +44,40 @@ class MatchUserToJobs
             }
 
             $profile = $user->profile;
+            $dateOfBirth = $user->date_of_birth;
+
+            $skillCategories = $profile->skill_categories ?? [];
+            if ($skillCategories && isset($skillCategories[0]) && is_array($skillCategories[0])) {
+                $selectedCats = array_column($skillCategories, 'category');
+                $selectedSubs = [];
+                foreach ($skillCategories as $entry) {
+                    foreach ($entry['subs'] ?? [] as $sub) {
+                        $selectedSubs[] = $sub;
+                    }
+                }
+            } else {
+                $selectedCats = $skillCategories;
+                $selectedSubs = [];
+            }
 
             $userProfile = [
                 'disability_condition' => $profile->disability_condition ?? [],
-                'skills' => $profile->skills ?? [],
+                'hearing_level' => $profile->hearing_level ?? '',
                 'communication_preference' => $profile->communication_preference ?? [],
                 'work_environment' => $profile->work_environment ?? [],
+                'skill_categories' => $selectedCats,
+                'sub_skills' => $selectedSubs,
+                'education_level' => $profile->education_level ?? '',
+                'education_major' => $profile->education_major ?? '',
+                'job_types' => $profile->job_types ?? [],
+                'preferred_locations' => $profile->preferred_locations ?? [],
+                'age' => $dateOfBirth ? $dateOfBirth->age : null,
             ];
 
             $jobs = JobVacancyData::all();
             $filteredJobs = $this->preFilter($userProfile, $jobs);
 
-            Log::info("MatchUserToJobs: user {$uid} — {$jobs->count()} jobs → " . count($filteredJobs) . " after pre-filter");
+            Log::info("MatchUserToJobs: user {$uid} — {$jobs->count()} jobs → ".count($filteredJobs).' after pre-filter');
 
             $batches = array_chunk($filteredJobs, 10);
 
@@ -58,7 +93,7 @@ class MatchUserToJobs
             Cache::put($doneKey, 0, now()->addMinutes(10));
             Cache::put($totalKey, count($batches), now()->addMinutes(10));
 
-            \App\Models\JobUserMatch::where('user_id', $uid)->delete();
+            JobUserMatch::where('user_id', $uid)->delete();
 
             foreach ($batches as $i => $batch) {
                 MatchBatchJob::dispatch($uid, $userProfile, $batch, $i);
@@ -76,10 +111,13 @@ class MatchUserToJobs
 
     protected function preFilter(array $userProfile, $jobs): array
     {
+
         $workEnvMap = [
-            'remote' => ['Remote', 'WFH', 'Work From Home'],
+            'remote' => ['Remote', 'WFH', 'Work From Home', 'Kerja dari rumah'],
             'hybrid' => ['Hybrid'],
-            'onsite' => ['On-site', 'On site', 'Full time', 'Full-time', 'Fulltime'],
+            'onsite_juru_isyarat' => ['On-site', 'On site', 'Full time', 'Full-time', 'Fulltime', 'Kontrak/Temporer'],
+            'onsite_notifikasi_visual' => ['On-site', 'On site', 'Full time', 'Full-time', 'Fulltime', 'Kontrak/Temporer'],
+            'onsite_standar' => ['On-site', 'On site', 'Full time', 'Full-time', 'Fulltime', 'Kontrak/Temporer'],
         ];
 
         $preferredEnvs = [];
@@ -88,13 +126,41 @@ class MatchUserToJobs
             $preferredEnvs = array_merge($preferredEnvs, $workEnvMap[$env] ?? []);
         }
 
-        $userSkills = array_filter(array_map(function ($s) {
-            $s = strtolower(trim($s));
+        $userSkills = [];
+        $skillCategoryLabels = [];
+        foreach ($userProfile['skill_categories'] ?? [] as $cat) {
+            $label = OnboardingData::SKILL_CATEGORIES[$cat] ?? $cat;
+            $skillCategoryLabels[] = $label;
+            $words = explode(' ', strtolower($label));
+            foreach ($words as $word) {
+                if (strlen($word) >= 3) {
+                    $userSkills[] = $word;
+                }
+            }
+        }
+        foreach ($userProfile['sub_skills'] ?? [] as $sub) {
+            foreach (OnboardingData::SKILL_SUBS as $cat => $subs) {
+                $label = $subs[$sub] ?? null;
+                if ($label) {
+                    $words = explode(' ', strtolower($label));
+                    foreach ($words as $word) {
+                        if (strlen($word) >= 3) {
+                            $userSkills[] = $word;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        $userSkills = array_unique($userSkills);
 
-            return strlen($s) >= 3 ? $s : null;
-        }, $userProfile['skills'] ?? []));
+        $preferredLocations = $userProfile['preferred_locations'] ?? [];
+        $locationLabels = [];
+        foreach ($preferredLocations as $loc) {
+            $locationLabels[] = OnboardingData::LOCATIONS[$loc] ?? $loc;
+        }
 
-        $filtered = $jobs->filter(function ($job) use ($preferredEnvs, $userSkills) {
+        $filtered = $jobs->filter(function ($job) use ($preferredEnvs, $userSkills, $locationLabels) {
             $workMatch = false;
             if (empty($preferredEnvs)) {
                 $workMatch = true;
@@ -120,7 +186,19 @@ class MatchUserToJobs
                 }
             }
 
-            return $workMatch || $skillMatch;
+            $locationMatch = false;
+            if (empty($locationLabels)) {
+                $locationMatch = true;
+            } else {
+                foreach ($locationLabels as $loc) {
+                    if (! empty($job->location) && stripos($job->location, $loc) !== false) {
+                        $locationMatch = true;
+                        break;
+                    }
+                }
+            }
+
+            return $workMatch || $skillMatch || $locationMatch;
         });
 
         return $filtered->values()->toArray();

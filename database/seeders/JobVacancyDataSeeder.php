@@ -14,22 +14,25 @@ class JobVacancyDataSeeder extends Seeder
     {
         $csvPath = database_path('jobstreet_data.csv');
 
-        if (!file_exists($csvPath)) {
+        if (! file_exists($csvPath)) {
             $this->command->error("CSV file not found: $csvPath");
+
             return;
         }
 
         $handle = fopen($csvPath, 'r');
-        if (!$handle) {
-            $this->command->error("Failed to open CSV file.");
+        if (! $handle) {
+            $this->command->error('Failed to open CSV file.');
+
             return;
         }
 
         $header = fgetcsv($handle, 0, ';');
 
-        if (!$header) {
+        if (! $header) {
             fclose($handle);
-            $this->command->error("Failed to read CSV header.");
+            $this->command->error('Failed to read CSV header.');
+
             return;
         }
 
@@ -66,6 +69,6 @@ class JobVacancyDataSeeder extends Seeder
             JobVacancyData::insert($chunk);
         }
 
-        $this->command->info('Imported ' . count($rows) . ' records from jobstreet_data.csv.');
+        $this->command->info('Imported '.count($rows).' records from jobstreet_data.csv.');
     }
 }
