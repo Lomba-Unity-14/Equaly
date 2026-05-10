@@ -8,10 +8,16 @@
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <span class="material-symbols-outlined text-outline">search</span>
         </div>
-        <input
+        <input wire:model.live.debounce.300ms="searchQuery"
             class="block w-full pl-12 pr-4 py-3 bg-surface border-2 border-border-subtle rounded-2xl text-body-lg font-body-lg text-text-primary placeholder-outline focus:ring-primary focus:border-primary min-h-[48px] shadow-sm transition-all focus:shadow-md focus:outline-none"
             placeholder="Cari pekerjaan inklusif..." type="text" />
     </div>
+
+    @if($searchQuery !== '')
+        <div class="font-body-sm text-body-sm text-text-secondary -mt-2">
+            <strong>{{ $searchCount }}</strong> lowongan ditemukan untuk "<strong>{{ $searchQuery }}</strong>"
+        </div>
+    @endif
 
     @if($matchingStatus === 'processing' || $matchingStatus === 'failed')
         <div wire:poll.5s="$refresh" class="flex flex-col gap-stack-md">

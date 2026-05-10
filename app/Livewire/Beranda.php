@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Jobs\MatchUserToJobs;
 use App\Models\CompanyReview;
 use App\Models\JobUserMatch;
+use App\Models\TrainingPartner;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -16,9 +17,20 @@ class Beranda extends Component
 {
     public string $matchingStatus = 'idle';
 
+    public string $searchQuery = '';
+
     public function mount(): void
     {
         $this->matchingStatus = Cache::get('matching_status_'.auth()->id(), 'idle');
+    }
+
+    public function search(): void
+    {
+        $query = trim($this->searchQuery);
+        if ($query === '') {
+            return;
+        }
+        $this->redirect(route('lowongan', ['q' => $query]), navigate: true);
     }
 
     public function retry(): void
@@ -57,6 +69,34 @@ class Beranda extends Component
             'matches' => $matches,
             'user' => auth()->user(),
             'companyAggregates' => $companyAggregates,
+            'academyRecommendation' => $this->getAcademyRecommendation(),
         ]);
+    }
+
+    protected function getAcademyRecommendation(): ?TrainingPartner
+    {
+        $profile = auth()->user()?->profile;
+        if (! $profile) {
+            return null;
+        }
+
+        $skillCategories = $profile->skill_categories ?? [];
+        if ($skillCategories && isset($skillCategories[0]) && is_array($skillCategories[0])) {
+            $userCategories = array_column($skillCategories, 'category');
+        } else {
+            $userCategories = $skillCategories;
+        }
+
+        $query = TrainingPartner::where('is_active', true)
+            ->whereIn('type', ['pelatihan', 'sertifikasi']);
+
+        if (! empty($userCategories)) {
+            $query->where(function ($q) use ($userCategories) {
+                $q->whereIn('category', $userCategories)
+                    ->orWhere('category', 'general');
+            });
+        }
+
+        return $query->orderBy('name')->first();
     }
 }

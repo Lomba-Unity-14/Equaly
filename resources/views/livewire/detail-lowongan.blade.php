@@ -44,6 +44,46 @@
     </x-detail-section>
     @endif
 
+    @if($academyRecommendation)
+    <x-detail-section title="Tingkatkan Peluangmu">
+        @php
+            $rec = $academyRecommendation;
+            $typeLabels = [
+                'pelatihan' => ['label' => 'Pelatihan', 'icon' => 'school', 'variant' => 'medium'],
+                'sertifikasi' => ['label' => 'Sertifikasi', 'icon' => 'verified', 'variant' => 'high'],
+            ];
+            $recType = $typeLabels[$rec->type] ?? ['label' => $rec->type, 'icon' => 'school', 'variant' => 'default'];
+        @endphp
+        <p class="font-body-sm text-body-sm text-text-secondary mb-3">Perkuat skillmu dengan program berikut agar peluangmu lebih besar:</p>
+        <a href="{{ route('academy.detail', $rec->id) }}" wire:navigate
+            class="block bg-surface-container-low rounded-xl p-3 hover:shadow-sm transition-shadow active:scale-[0.98] border border-border-subtle">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-primary-fixed-dim flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings: 'FILL' 1;">{{ $recType['icon'] }}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="font-body-lg text-body-lg font-semibold text-text-primary leading-tight">{{ $rec->name }}</h4>
+                    <p class="font-body-sm text-body-sm text-text-secondary mt-0.5">
+                        @if($rec->duration)
+                            <span>{{ $rec->duration }}</span>
+                        @endif
+                        @if($rec->duration && $rec->level)
+                            <span> · </span>
+                        @endif
+                        @if($rec->level)
+                            <span>{{ $rec->level }}</span>
+                        @endif
+                    </p>
+                    <div class="flex gap-2 mt-2">
+                        <x-badge :icon="$recType['icon']" :text="$recType['label']" :variant="$recType['variant']" />
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-outline shrink-0 mt-2">chevron_right</span>
+            </div>
+        </a>
+    </x-detail-section>
+    @endif
+
     <x-detail-section title="Deskripsi Pekerjaan">
         <div class="font-body-lg text-body-lg text-text-secondary prose prose-sm max-w-none">
             {!! nl2br(e(Str::limit($job->jobdesk, 2000))) !!}

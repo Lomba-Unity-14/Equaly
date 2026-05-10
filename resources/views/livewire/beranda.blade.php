@@ -8,27 +8,58 @@
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <span class="material-symbols-outlined text-outline">search</span>
         </div>
-        <input
+        <input wire:model="searchQuery" wire:keydown.enter="search"
             class="block w-full pl-12 pr-4 py-3 bg-surface border-2 border-border-subtle rounded-2xl text-body-lg font-body-lg text-text-primary placeholder-outline focus:ring-primary focus:border-primary min-h-[48px] shadow-sm transition-all focus:shadow-md focus:outline-none"
             placeholder="Cari pekerjaan inklusif..." type="text" />
     </div>
 
-    <div
-        class="bg-linear-to-br from-secondary-container to-primary-fixed-dim rounded-3xl p-6 relative overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/50 transform">
-        <div class="relative z-10 w-2/3">
-            <h2 class="font-h2 text-h2 text-on-secondary-container mb-4 font-bold">Tingkatkan skill UI/UX kamu ke 70%!
-            </h2>
-            <button
-                class="bg-primary text-on-primary font-label-caps text-label-caps py-3 px-6 rounded-full hover:bg-primary-fixed-variant transition-all min-h-[48px] inline-flex items-center justify-center shadow-lg hover:shadow-xl active:scale-95">
-                Mulai Belajar
-            </button>
-        </div>
-        <!-- Decorative Element -->
-        <div class="absolute right-10 bottom-5 opacity-20 pointer-events-none transform rotate-[-10deg] scale-600">
-            <span class="material-symbols-outlined text-[140px] text-primary"
-                style="font-variation-settings: 'FILL' 1;">school</span>
-        </div>
-    </div>
+    @auth
+        @if($academyRecommendation)
+            @php
+                $rec = $academyRecommendation;
+                $typeLabels = [
+                    'pelatihan' => ['label' => 'Pelatihan', 'icon' => 'school', 'variant' => 'medium'],
+                    'sertifikasi' => ['label' => 'Sertifikasi', 'icon' => 'verified', 'variant' => 'high'],
+                ];
+                $recType = $typeLabels[$rec->type] ?? ['label' => $rec->type, 'icon' => 'school', 'variant' => 'default'];
+                $catLabel = \App\Data\OnboardingData::SKILL_CATEGORIES[$rec->category] ?? ($rec->category === 'general' ? 'Umum' : $rec->category);
+            @endphp
+            <section class="bg-linear-to-br from-secondary-container to-primary-fixed-dim rounded-3xl p-5 relative overflow-hidden shadow-sm border border-white/50">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="material-symbols-outlined text-[20px] text-on-secondary-container">school</span>
+                        <h2 class="font-body-lg text-body-lg font-semibold text-on-secondary-container">Rekomendasi Academy</h2>
+                    </div>
+                    <a href="{{ route('academy.detail', $rec->id) }}" wire:navigate
+                        class="block bg-surface/80 backdrop-blur-sm rounded-xl p-3 hover:bg-surface/90 transition-all active:scale-[0.98] border border-white/40">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-primary-fixed-dim flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings: 'FILL' 1;">{{ $recType['icon'] }}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="font-body-lg text-body-lg font-semibold text-on-secondary-container leading-tight">{{ $rec->name }}</h3>
+                                <p class="font-body-sm text-body-sm text-on-secondary-container/70 mt-0.5">
+                                    {{ $catLabel }}{{ $rec->duration ? ' · ' . $rec->duration : '' }}{{ $rec->level ? ' · ' . $rec->level : '' }}
+                                </p>
+                                <div class="flex gap-2 mt-1.5">
+                                    <x-badge :icon="$recType['icon']" :text="$recType['label']" :variant="$recType['variant']" />
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-on-secondary-container/50 shrink-0 mt-2">chevron_right</span>
+                        </div>
+                    </a>
+                    <a href="{{ route('academy') }}" wire:navigate
+                        class="inline-flex items-center gap-1 mt-3 text-label-caps font-label-caps text-on-secondary-container/70 hover:text-on-secondary-container transition-colors">
+                        Lihat Semua Academy
+                        <span class="material-symbols-outlined text-[16px]">arrow_forward_ios</span>
+                    </a>
+                </div>
+                <div class="absolute -right-6 -top-6 opacity-10 pointer-events-none">
+                    <span class="material-symbols-outlined text-[120px] text-primary" style="font-variation-settings: 'FILL' 1;">school</span>
+                </div>
+            </section>
+        @endif
+    @endauth
 
     @if($matchingStatus === 'processing')
         <section class="flex flex-col gap-stack-md" wire:poll.2s="$refresh">

@@ -6,6 +6,7 @@ use App\Data\OnboardingData;
 use App\Models\CompanyReview;
 use App\Models\JobUserMatch;
 use App\Models\JobVacancyData;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -17,9 +18,12 @@ class Lowongan extends Component
 {
     public string $matchingStatus = 'idle';
 
+    public string $searchQuery = '';
+
     public function mount(): void
     {
         $this->matchingStatus = Cache::get('matching_status_'.auth()->id(), 'idle');
+        $this->searchQuery = request()->get('q', '');
     }
 
     public function render()
@@ -61,23 +65,44 @@ class Lowongan extends Component
             ->get()
             ->keyBy('company_name');
 
+        $searchCount = null;
+        $searchQuery = trim($this->searchQuery);
+        if ($searchQuery !== '') {
+            $needle = strtolower($searchQuery);
+            $matches = $matches->filter(function ($match) use ($needle) {
+                $job = $match->jobVacancyData;
+                $haystack = strtolower(
+                    ($job->job_title ?? '').' '.
+                    ($job->company ?? '').' '.
+                    ($job->skill_req ?? '').' '.
+                    ($job->job_category ?? '').' '.
+                    ($job->jobdesk ?? '')
+                );
+
+                return str_contains($haystack, $needle);
+            })->values();
+
+            $searchCount = $matches->count();
+        }
+
         return view('livewire.lowongan', [
             'matches' => $matches,
             'companyAggregates' => $companyAggregates,
+            'searchCount' => $searchCount,
         ]);
     }
 
-    protected function filterByUserSkills($jobs): array
+    protected function filterByUserSkills($jobs): Collection
     {
         $profile = auth()->user()->profile;
         if (! $profile) {
-            return $jobs->toArray();
+            return $jobs;
         }
 
         $keywords = $this->extractSkillKeywords($profile);
 
         if (empty($keywords)) {
-            return $jobs->toArray();
+            return $jobs;
         }
 
         return $jobs->filter(function ($job) use ($keywords) {
@@ -93,7 +118,7 @@ class Lowongan extends Component
             }
 
             return false;
-        })->values()->toArray();
+        })->values();
     }
 
     protected function extractSkillKeywords($profile): array

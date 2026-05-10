@@ -1,0 +1,302 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\TrainingPartner;
+use Illuminate\Database\Seeder;
+
+class TrainingPartnerSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $partners = [
+            // === PEMERINTAH ===
+            [
+                'name' => 'BPVP Padang — Pelatihan Tata Kafe untuk Tunarungu',
+                'description' => 'Program pelatihan tata kafe (barista & manajemen kedai kopi) khusus penyandang tunarungu. Diselenggarakan oleh Balai Pelatihan Vokasi dan Produktivitas (BPVP) Padang, Kementerian Ketenagakerjaan. Kurikulum dirancang khusus untuk tunarungu dengan instruktur yang menguasai BISINDO.',
+                'duration' => '4 Minggu',
+                'level' => 'Dasar',
+                'format' => 'Offline (BPVP Padang)',
+                'outcomes' => ['Mengoperasikan mesin espresso', 'Membuat latte art dasar', 'Manajemen stok kedai kopi', 'Komunikasi dengan pelanggan via teks/isyarat'],
+                'category' => 'kuliner_tata_boga',
+                'type' => 'pemerintah',
+                'website_url' => 'https://bpvp-padang.kemnaker.go.id',
+                'accessibility' => ['bisindo', 'teks_tertulis', 'juru_isyarat'],
+            ],
+            [
+                'name' => 'BPVP Padang — Pelatihan Tata Boga',
+                'description' => 'Program pelatihan kuliner mencakup teknik memasak dasar, bakery, pastry, dan higiene makanan. Dikurasi khusus untuk tunarungu dengan panduan visual dan teks. Sertifikat kompetensi dari Kemnaker.',
+                'duration' => '6 Minggu',
+                'level' => 'Dasar',
+                'format' => 'Offline (BPVP Padang)',
+                'outcomes' => ['Teknik memasak dasar (merebus, menggoreng, mengukus)', 'Membuat roti dan pastry', 'Higiene dan sanitasi makanan', 'Manajemen dapur'],
+                'category' => 'kuliner_tata_boga',
+                'type' => 'pemerintah',
+                'website_url' => 'https://bpvp-padang.kemnaker.go.id',
+                'accessibility' => ['bisindo', 'teks_tertulis', 'juru_isyarat'],
+            ],
+            [
+                'name' => 'Dinsos DKI Jakarta — Pelatihan Barista Inklusif',
+                'description' => 'Program pelatihan barista untuk penyandang disabilitas di Pusat Pelatihan Kerja Daerah (PPKD) Jakarta Timur. Termasuk praktik langsung di kedai kopi mitra dan pendampingan penempatan kerja.',
+                'duration' => '3 Minggu',
+                'level' => 'Dasar',
+                'format' => 'Offline (PPKD Jakarta Timur)',
+                'outcomes' => ['Dasar-dasar kopi dan brewing', 'Pengoperasian mesin kopi', 'Latte art dasar', 'Pelayanan pelanggan inklusif'],
+                'category' => 'kuliner_tata_boga',
+                'type' => 'pemerintah',
+                'website_url' => null,
+                'accessibility' => ['bisindo', 'teks_tertulis'],
+            ],
+            [
+                'name' => 'Jakpreneur Disabilitas — Content Creator',
+                'description' => 'Program pelatihan content creator dan pemasaran digital untuk disabilitas oleh Pemerintah Provinsi DKI Jakarta. Mencakup pembuatan konten video, fotografi produk, copywriting, dan manajemen media sosial. Disertai bantuan peralatan.',
+                'duration' => '8 Minggu',
+                'level' => 'Dasar - Menengah',
+                'format' => 'Hybrid (Online + Offline)',
+                'outcomes' => ['Fotografi produk dengan HP', 'Editing video (CapCut, Premiere Rush)', 'Copywriting media sosial', 'Strategi konten Instagram & TikTok'],
+                'category' => 'desain_kreatif',
+                'type' => 'pemerintah',
+                'website_url' => 'https://jakpreneur.jakarta.go.id',
+                'accessibility' => ['bisindo', 'teks_tertulis'],
+            ],
+            [
+                'name' => 'Kemnaker Job Fair Inklusif',
+                'description' => 'Job fair khusus penyandang disabilitas yang diselenggarakan Kementerian Ketenagakerjaan secara berkala. Menghubungkan pencari kerja tunarungu dengan perusahaan inklusif. Tahun 2025 membuka 135 lowongan dari 26 perusahaan. Dilengkapi juru isyarat dan pendampingan.',
+                'duration' => '2 Hari (event periodik)',
+                'level' => 'Semua Level',
+                'format' => 'Offline (Jakarta)',
+                'outcomes' => ['Bertemu langsung dengan HRD perusahaan inklusif', 'Konsultasi karir dengan pendamping', 'Tes wawancara simulasi', 'Networking dengan komunitas disabilitas'],
+                'category' => 'general',
+                'type' => 'pemerintah',
+                'website_url' => 'https://kemnaker.go.id',
+                'accessibility' => ['bisindo', 'teks_tertulis', 'juru_isyarat'],
+            ],
+            [
+                'name' => 'Inclusive Job Center — BPJS Ketenagakerjaan',
+                'description' => 'Portal lowongan kerja khusus disabilitas dengan ribuan lowongan aktif dari ratusan perusahaan terdaftar. Dilengkapi fitur pencarian berdasarkan jenis disabilitas, lokasi, dan kategori pekerjaan. GRATIS untuk pencari kerja.',
+                'duration' => 'Akses Mandiri (24/7)',
+                'level' => 'Semua Level',
+                'format' => 'Online',
+                'outcomes' => ['Akses ribuan lowongan inklusif', 'Notifikasi lowongan baru', 'Profil pencari kerja yang terkurasi', 'Informasi perusahaan inklusif'],
+                'category' => 'general',
+                'type' => 'pemerintah',
+                'website_url' => 'https://lokerdisabilitas.bpjsketenagakerjaan.go.id',
+                'accessibility' => ['teks_tertulis'],
+            ],
+
+            // === KOMUNITAS ===
+            [
+                'name' => 'Pusbisindo — Kursus BISINDO',
+                'description' => 'Pusat Bahasa Isyarat Indonesia menyediakan pelatihan BISINDO untuk masyarakat umum dan perusahaan. Program sertifikasi kemampuan bahasa isyarat tingkat dasar hingga mahir. Cocok untuk tunarungu yang ingin memperdalam isyarat atau untuk rekan kerja yang ingin belajar berkomunikasi.',
+                'duration' => '12 Sesi (@2 jam)',
+                'level' => 'Dasar - Mahir',
+                'format' => 'Offline (Jakarta) / Online',
+                'outcomes' => ['Percakapan dasar BISINDO', 'Kosakata isyarat untuk lingkungan kerja', 'Sertifikasi tingkat BISINDO', 'Bergabung komunitas pengguna BISINDO'],
+                'category' => 'general',
+                'type' => 'komunitas',
+                'website_url' => 'https://pusbisindo.or.id',
+                'accessibility' => ['bisindo', 'teks_tertulis'],
+            ],
+            [
+                'name' => 'Gerkatin — Program Pemberdayaan Tuli',
+                'description' => 'Gerakan untuk Kesejahteraan Tunarungu Indonesia. Menyediakan advokasi, pendampingan karir, dan program pemberdayaan bagi tunarungu melalui 31 DPD provinsi dan 416 DPC kota di seluruh Indonesia. Aktif dalam advokasi hak pekerja tunarungu.',
+                'duration' => 'Berkelanjutan',
+                'level' => 'Semua Level',
+                'format' => 'Offline (31 provinsi)',
+                'outcomes' => ['Pendampingan hukum & advokasi', 'Konsultasi karir', 'Komunitas tunarungu nasional', 'Informasi lowongan kerja eksklusif'],
+                'category' => 'general',
+                'type' => 'komunitas',
+                'website_url' => 'https://gerkatin.org',
+                'accessibility' => ['bisindo', 'teks_tertulis'],
+            ],
+            [
+                'name' => 'PLJ Indonesia — Advokasi & Pendampingan',
+                'description' => 'Organisasi advokasi dan pemberdayaan penyandang disabilitas. Menyediakan layanan konsultasi karir, pendampingan hukum, dan pelatihan soft skill untuk memasuki dunia kerja. Fokus pada kemandirian dan kesetaraan akses pekerjaan.',
+                'duration' => 'Berkelanjutan',
+                'level' => 'Semua Level',
+                'format' => 'Hybrid',
+                'outcomes' => ['Konsultasi karir personal', 'Pendampingan hukum ketenagakerjaan', 'Pelatihan soft skill (wawancara, CV)', 'Koneksi dengan perusahaan mitra'],
+                'category' => 'general',
+                'type' => 'komunitas',
+                'website_url' => null,
+                'accessibility' => ['bisindo', 'teks_tertulis'],
+            ],
+
+            // === IT & PROGRAMMING ===
+            [
+                'name' => 'Bootcamp Fullstack Web Developer',
+                'description' => 'Program intensif 12 minggu untuk menjadi fullstack web developer. Materi mencakup Laravel (backend), React (frontend), PostgreSQL (database), dan deployment. Kelas teks-first dengan dukungan asisten. Cocok untuk tunarungu karena 100% berbasis teks dan visual.',
+                'duration' => '12 Minggu',
+                'level' => 'Menengah',
+                'format' => 'Online (Teks-first)',
+                'outcomes' => ['Membangun REST API dengan Laravel', 'Membuat frontend interaktif dengan React', 'Mendesain database PostgreSQL', 'Deploy aplikasi ke production server'],
+                'category' => 'it_programming',
+                'type' => 'pelatihan',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis'],
+            ],
+            [
+                'name' => 'Sertifikasi Backend Engineer (Laravel)',
+                'description' => 'Program sertifikasi backend development menggunakan Laravel. Mencakup API development, database design, testing (PHPUnit), dan CI/CD deployment. Peserta yang lulus mendapatkan sertifikat kompetensi yang diakui industri. Kurikulum berbasis teks dan dokumentasi.',
+                'duration' => '8 Minggu',
+                'level' => 'Menengah - Mahir',
+                'format' => 'Online (Teks-first)',
+                'outcomes' => ['Laravel advanced (queue, events, caching)', 'RESTful API design patterns', 'Automated testing dengan PHPUnit', 'CI/CD pipeline dengan GitHub Actions'],
+                'category' => 'it_programming',
+                'type' => 'sertifikasi',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis'],
+            ],
+            [
+                'name' => 'Pelatihan Data Analyst & SQL',
+                'description' => 'Pelatihan data analysis menggunakan SQL, Excel, dan Python (Pandas). Cocok untuk tunarungu karena 100% berbasis teks dan visual. Dari dasar hingga mahir dalam 6 minggu. Sertifikat kelulusan untuk portofolio kerja.',
+                'duration' => '6 Minggu',
+                'level' => 'Dasar - Menengah',
+                'format' => 'Online (Teks-first)',
+                'outcomes' => ['Menulis query SQL kompleks (JOIN, subquery, window function)', 'Analisis data dengan Excel pivot & chart', 'Data cleaning & manipulation dengan Python', 'Membuat laporan data visual'],
+                'category' => 'it_programming',
+                'type' => 'pelatihan',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis'],
+            ],
+
+            // === DESAIN & KREATIF ===
+            [
+                'name' => 'Sertifikasi UI/UX Designer Professional',
+                'description' => 'Program sertifikasi UI/UX design dengan fokus pada aksesibilitas digital (WCAG). Materi mencakup Figma, design system, user research, usability testing, dan prototyping. Portofolio-ready — hasil akhir berupa project nyata untuk portofolio.',
+                'duration' => '10 Minggu',
+                'level' => 'Menengah',
+                'format' => 'Online (Teks + Visual)',
+                'outcomes' => ['Mendesain antarmuka dengan Figma', 'Membuat design system & komponen', 'Melakukan user research & usability testing', 'Memahami standar aksesibilitas WCAG 2.1'],
+                'category' => 'desain_kreatif',
+                'type' => 'sertifikasi',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis'],
+            ],
+            [
+                'name' => 'Bootcamp Graphic Designer',
+                'description' => 'Pelatihan desain grafis profesional mencakup Adobe Illustrator, Photoshop, dan Canva. Cocok untuk tunarungu karena berbasis visual. Proyek akhir berupa portofolia siap kerja. Mentor berpengalaman di industri kreatif.',
+                'duration' => '8 Minggu',
+                'level' => 'Dasar - Menengah',
+                'format' => 'Online (Visual + Teks)',
+                'outcomes' => ['Membuat desain vector dengan Illustrator', 'Editing foto tingkat lanjut dengan Photoshop', 'Mendesain konten media sosial dengan Canva', 'Membangun portofolio visual'],
+                'category' => 'desain_kreatif',
+                'type' => 'pelatihan',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis', 'notifikasi_visual'],
+            ],
+
+            // === ADMINISTRASI & DATA ===
+            [
+                'name' => 'Pelatihan Data Entry Profesional',
+                'description' => 'Pelatihan data entry cepat dan akurat. Mencakup Microsoft Excel tingkat lanjut (VLOOKUP, pivot, macro), Google Sheets, dan tools administrasi digital lainnya. Sertifikat kompetensi setelah lulus. Cocok untuk pekerjaan back-office.',
+                'duration' => '4 Minggu',
+                'level' => 'Dasar',
+                'format' => 'Online (Teks-first)',
+                'outcomes' => ['Mengetik cepat (min 60 kpm)', 'Microsoft Excel lanjutan (rumus, pivot, macro)', 'Google Sheets & automation', 'Manajemen dokumen digital'],
+                'category' => 'administrasi_data',
+                'type' => 'pelatihan',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis'],
+            ],
+            [
+                'name' => 'Pelatihan Admin Officer & Document Processing',
+                'description' => 'Pelatihan administrasi perkantoran mencakup surat-menyurat, pengarsipan digital, manajemen jadwal, dan penggunaan aplikasi perkantoran. Semua materi berbasis teks dan visual. Praktik langsung dengan studi kasus nyata.',
+                'duration' => '4 Minggu',
+                'level' => 'Dasar',
+                'format' => 'Online (Teks + Visual)',
+                'outcomes' => ['Surat-menyurat formal & email profesional', 'Pengarsipan dokumen digital (Google Drive, Dropbox)', 'Manajemen kalender & jadwal', 'Dasar-dasar Microsoft Word & PowerPoint'],
+                'category' => 'administrasi_data',
+                'type' => 'pelatihan',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis'],
+            ],
+
+            // === RETAIL & LOGISTIK ===
+            [
+                'name' => 'Pelatihan Kasir & Pramuniaga Retail',
+                'description' => 'Pelatihan operasional kasir dan pelayanan toko. Mencakup sistem POS (Point of Sale), manajemen stok, display produk, dan komunikasi pelanggan berbasis gesture/teks. Kerjasama dengan jaringan ritel nasional.',
+                'duration' => '3 Minggu',
+                'level' => 'Dasar',
+                'format' => 'Offline (Jakarta)',
+                'outcomes' => ['Mengoperasikan sistem POS', 'Manajemen stok & inventori', 'Display produk & visual merchandising', 'Pelayanan pelanggan dengan gesture/teks'],
+                'category' => 'retail_logistik',
+                'type' => 'pelatihan',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis'],
+            ],
+            [
+                'name' => 'Program Warehouse & Logistik Inklusif',
+                'description' => 'Pelatihan pergudangan mencakup picking, packing, inventory management, dan penggunaan scanner/WMS. Instruksi tertulis dan visual. Sertifikat kompetensi logistik. Peluang penempatan di perusahaan logistik mitra.',
+                'duration' => '4 Minggu',
+                'level' => 'Dasar',
+                'format' => 'Offline (Jakarta)',
+                'outcomes' => ['Picking & packing sesuai standar', 'Inventory management dengan WMS', 'Penggunaan scanner barcode', 'Keselamatan kerja di gudang'],
+                'category' => 'retail_logistik',
+                'type' => 'pelatihan',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis', 'notifikasi_visual'],
+            ],
+
+            // === OTOMOTIF & TEKNISI ===
+            [
+                'name' => 'Sertifikasi Teknisi Elektronik & Hardware',
+                'description' => 'Program sertifikasi teknisi elektronik mencakup soldering, perbaikan perangkat keras (laptop, HP), dan troubleshooting komponen. Praktik langsung dengan instruksi visual. Sertifikat kompetensi dari lembaga terakreditasi.',
+                'duration' => '8 Minggu',
+                'level' => 'Menengah',
+                'format' => 'Offline (Jakarta)',
+                'outcomes' => ['Mengukur & menguji komponen elektronik', 'Soldering PCB tingkat lanjut', 'Diagnosis & perbaikan laptop/HP', 'Membaca skema elektronik'],
+                'category' => 'otomotif_teknisi',
+                'type' => 'sertifikasi',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis', 'notifikasi_visual'],
+            ],
+            [
+                'name' => 'Pelatihan Montir & Mekanik Kendaraan',
+                'description' => 'Pelatihan mekanik kendaraan ringan (mobil & motor). Materi mencakup mesin bensin/diesel, sistem kelistrikan, AC mobil, dan perawatan berkala. Instruktur berpengalaman dengan metode demonstrasi visual. Praktik 70%.',
+                'duration' => '12 Minggu',
+                'level' => 'Dasar - Menengah',
+                'format' => 'Offline (Jakarta)',
+                'outcomes' => ['Perawatan mesin berkala', 'Diagnosis kerusakan mesin', 'Perbaikan sistem kelistrikan dasar', 'Servis AC kendaraan'],
+                'category' => 'otomotif_teknisi',
+                'type' => 'pelatihan',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis', 'notifikasi_visual'],
+            ],
+
+            // === HOSPITALITY ===
+            [
+                'name' => 'Program Housekeeping & Laundry Hotel',
+                'description' => 'Pelatihan housekeeping hotel mencakup kebersihan kamar, laundry, tata graha, dan standar operasional hotel bintang 3-5. Cocok untuk tunarungu karena prosedural, visual, dan minim komunikasi verbal. Peluang penempatan di hotel mitra.',
+                'duration' => '4 Minggu',
+                'level' => 'Dasar',
+                'format' => 'Offline (Jakarta)',
+                'outcomes' => ['Standar kebersihan kamar hotel', 'Teknik laundry & dry cleaning', 'Tata graha & penyusunan linen', 'Standar operasional hotel inklusif'],
+                'category' => 'hospitality',
+                'type' => 'pelatihan',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis'],
+            ],
+
+            // === TEKSTIL & MANUFAKTUR ===
+            [
+                'name' => 'Pelatihan Menjahit & Operator Produksi',
+                'description' => 'Pelatihan menjahit tingkat dasar hingga mahir. Mencakup pola dasar, mesin jahit industri, teknik finishing, dan quality control produksi. Instruksi visual dengan demonstrasi langsung. Cocok untuk industri garmen dan konveksi.',
+                'duration' => '8 Minggu',
+                'level' => 'Dasar - Mahir',
+                'format' => 'Offline (Jakarta)',
+                'outcomes' => ['Membuat pola dasar busana', 'Mengoperasikan mesin jahit industri', 'Teknik finishing & quality control', 'Produksi massal busana sederhana'],
+                'category' => 'tekstil_manufaktur',
+                'type' => 'pelatihan',
+                'website_url' => null,
+                'accessibility' => ['teks_tertulis', 'notifikasi_visual'],
+            ],
+        ];
+
+        foreach ($partners as $partner) {
+            TrainingPartner::create($partner);
+        }
+
+        $this->command->info('Imported '.count($partners).' training partners.');
+    }
+}

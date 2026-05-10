@@ -6,6 +6,7 @@ use App\Models\CompanyReview;
 use App\Models\JobApplication;
 use App\Models\JobUserMatch;
 use App\Models\JobVacancyData;
+use App\Models\TrainingPartner;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -79,6 +80,47 @@ class DetailLowongan extends Component
 
     public function render()
     {
-        return view('livewire.detail-lowongan');
+        $academyRecommendation = $this->getAcademyRecommendation();
+
+        return view('livewire.detail-lowongan', [
+            'academyRecommendation' => $academyRecommendation,
+        ]);
+    }
+
+    protected function getAcademyRecommendation(): ?TrainingPartner
+    {
+        if (! $this->match || ! auth()->check()) {
+            return null;
+        }
+
+        $score = $this->match->match_score;
+        if ($score < 40 || $score >= 80) {
+            return null;
+        }
+
+        $profile = auth()->user()->profile;
+        if (! $profile) {
+            return null;
+        }
+
+        $skillCategories = $profile->skill_categories ?? [];
+        if ($skillCategories && isset($skillCategories[0]) && is_array($skillCategories[0])) {
+            $userCategories = array_column($skillCategories, 'category');
+        } else {
+            $userCategories = $skillCategories;
+        }
+
+        if (empty($userCategories)) {
+            return null;
+        }
+
+        return TrainingPartner::where('is_active', true)
+            ->whereIn('type', ['pelatihan', 'sertifikasi'])
+            ->where(function ($q) use ($userCategories) {
+                $q->whereIn('category', $userCategories)
+                    ->orWhere('category', 'general');
+            })
+            ->orderBy('name')
+            ->first();
     }
 }
