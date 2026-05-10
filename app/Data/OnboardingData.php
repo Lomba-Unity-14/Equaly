@@ -186,6 +186,24 @@ class OnboardingData
         'tunarungu' => 'Tunarungu (Tuli/Deaf)',
     ];
 
+    public const MATCH_TIERS = [
+        ['min' => 80, 'label' => 'Sangat Disarankan', 'desc' => 'Profil anda adalah prioritas utama perusahaan ini', 'icon' => 'check_circle', 'variant' => 'high'],
+        ['min' => 60, 'label' => 'Disarankan', 'desc' => 'Cukup namun perlu penguatan di beberapa skill spesifik', 'icon' => 'info', 'variant' => 'medium'],
+        ['min' => 40, 'label' => 'Dipertimbangkan', 'desc' => 'Masih ada gap yang besar, disarankan mengikuti training/academy terlebih dahulu', 'icon' => 'warning', 'variant' => 'medium'],
+        ['min' => 0, 'label' => 'Belum Disarankan', 'desc' => '', 'icon' => 'warning', 'variant' => 'low'],
+    ];
+
+    public static function matchTier(int $score): array
+    {
+        foreach (self::MATCH_TIERS as $tier) {
+            if ($score >= $tier['min']) {
+                return $tier;
+            }
+        }
+
+        return self::MATCH_TIERS[3];
+    }
+
     public static function getMajorsForCategories(array $categories, bool $isSmk = false): array
     {
         if ($isSmk) {

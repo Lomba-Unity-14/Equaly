@@ -251,7 +251,8 @@ class Profil extends Component
     {
         Cache::put('matching_status_'.auth()->id(), 'processing', now()->addMinutes(10));
         (new MatchUserToJobs(auth()->id()))->handle();
-        $this->redirect(route('matching'), navigate: true);
+        session()->flash('success', 'AI akan mencocokkan ulang dengan data terbaru...');
+        $this->redirect(route('beranda'), navigate: true);
     }
 
     public function render()

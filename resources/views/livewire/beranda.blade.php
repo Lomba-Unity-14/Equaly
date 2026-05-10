@@ -30,55 +30,65 @@
         </div>
     </div>
 
-    <section class="flex flex-col gap-stack-md">
-        <h2 class="font-h2 text-h2 text-text-primary">Rekomendasi Untukmu</h2>
+    @if($matchingStatus === 'processing')
+        <section class="flex flex-col gap-stack-md" wire:poll.2s="$refresh">
+            <h2 class="font-h2 text-h2 text-text-primary">Rekomendasi Untukmu</h2>
 
-        @forelse($matches as $match)
-            @php $job = $match->jobVacancyData; @endphp
-            <a href="{{ route('lowongan.detail', $job->id) }}" wire:navigate>
-                <article
-                    class="bg-surface rounded-2xl border border-border-subtle shadow-sm p-4 hover:shadow-md transition-shadow">
-                    <div class="flex items-start gap-4 mb-4">
-                        <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0 overflow-hidden">
-                            @if($job->image_logo_url)
-                                <img src="{{ $job->image_logo_url }}" alt="{{ $job->company }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\'material-symbols-outlined text-secondary\'>domain</span>'">
-                            @else
-                                <span class="material-symbols-outlined text-secondary">domain</span>
-                            @endif
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="font-body-lg text-body-lg font-semibold text-text-primary">{{ $job->job_title }}</h3>
-                            <p class="font-body-sm text-body-sm text-text-secondary">{{ $job->company ?? 'Perusahaan Rahasia' }}</p>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        @php
-                            $scoreVariant = $match->match_score >= 75 ? 'high' : ($match->match_score >= 60 ? 'medium' : 'low');
-                            $scoreIcon = $match->match_score >= 75 ? 'check_circle' : ($match->match_score >= 60 ? 'info' : 'warning');
-                        @endphp
-                        <x-badge :icon="$scoreIcon" :text="'Match: ' . $match->match_score . '%'" :variant="$scoreVariant" />
-                        @if($job->work_type)
-                            <x-badge icon="schedule" :text="$job->work_type" />
-                        @endif
-                        @php $agg = $companyAggregates[$job->company] ?? null; @endphp
-                        @if($agg && $agg->total > 0)
-                            @php
-                                $pct = round(($agg->friendly / $agg->total) * 100);
-                                $isFriendly = $pct >= 50;
-                            @endphp
-                            <x-badge icon="{{ $isFriendly ? 'diversity_3' : 'warning' }}" :text="$isFriendly ? 'Ramah Disabilitas' : 'Kurang Ramah'" :variant="$isFriendly ? 'high' : 'low'" />
-                        @endif
-                    </div>
-                </article>
-            </a>
-        @empty
-            <div class="text-center py-12">
-                <div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mx-auto mb-4">
-                    <span class="material-symbols-outlined text-[32px] text-outline">search_off</span>
-                </div>
-                <p class="font-body-lg text-body-lg text-text-secondary mb-1">Belum ada rekomendasi</p>
-                <p class="font-body-sm text-body-sm text-outline">Coba lengkapi profilmu agar lowongan yang cocok muncul di sini.</p>
+            <div class="flex items-center gap-2 text-text-secondary font-body-sm text-body-sm mb-2">
+                <span class="material-symbols-outlined text-[18px] animate-spin">refresh</span>
+                <span>AI sedang menganalisa profilmu...</span>
             </div>
-        @endforelse
-    </section>
+
+            @for($i = 0; $i < 3; $i++)
+                <div class="bg-surface rounded-2xl border border-border-subtle shadow-sm p-4 animate-pulse">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-surface-container-high shrink-0"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="h-5 bg-surface-container-high rounded w-3/4"></div>
+                            <div class="h-4 bg-surface-container-high rounded w-1/2"></div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="h-6 bg-surface-container-high rounded-full w-20"></div>
+                        <div class="h-6 bg-surface-container-high rounded-full w-16"></div>
+                    </div>
+                </div>
+            @endfor
+        </section>
+
+    @elseif($matchingStatus === 'failed')
+        <section class="flex flex-col gap-stack-md" wire:poll.5s="$refresh">
+            <h2 class="font-h2 text-h2 text-text-primary">Rekomendasi Untukmu</h2>
+
+            <div class="text-center py-8">
+                <div class="w-16 h-16 rounded-full bg-error-container flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-outlined text-[32px] text-on-error-container">error</span>
+                </div>
+                <p class="font-body-lg text-body-lg text-text-secondary mb-1">AI mengalami kendala</p>
+                <p class="font-body-sm text-body-sm text-outline mb-4">Tidak dapat menyelesaikan pencocokan. Coba lagi nanti.</p>
+                <button wire:click="retry"
+                    class="bg-primary text-on-primary font-label-caps text-label-caps py-2 px-6 rounded-full hover:bg-primary-fixed-variant transition-all min-h-[44px] inline-flex items-center justify-center shadow-lg active:scale-95">
+                    <span class="material-symbols-outlined text-[18px] mr-2">refresh</span>
+                    Coba Lagi
+                </button>
+            </div>
+        </section>
+
+    @else
+        <section class="flex flex-col gap-stack-md">
+            <h2 class="font-h2 text-h2 text-text-primary">Rekomendasi Untukmu</h2>
+
+            @forelse($matches as $match)
+                @include('livewire.partials.job-card', ['match' => $match, 'companyAggregates' => $companyAggregates])
+            @empty
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mx-auto mb-4">
+                        <span class="material-symbols-outlined text-[32px] text-outline">search_off</span>
+                    </div>
+                    <p class="font-body-lg text-body-lg text-text-secondary mb-1">Belum ada rekomendasi</p>
+                    <p class="font-body-sm text-body-sm text-outline">Coba lengkapi profilmu agar lowongan yang cocok muncul di sini.</p>
+                </div>
+            @endforelse
+        </section>
+    @endif
 </div>

@@ -30,7 +30,7 @@ return [
 
     'deepseek' => [
         'api_key' => env('DEEPSEEK_API_KEY'),
-        'model' => env('DEEPSEEK_MODEL', 'deepseek-chat'),
+        'model' => env('DEEPSEEK_MODEL', 'deepseek-v4-pro'),
         'match_threshold' => env('JOB_MATCH_THRESHOLD', 60),
     ],
 

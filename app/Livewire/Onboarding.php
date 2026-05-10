@@ -134,8 +134,8 @@ class Onboarding extends Component
         Cache::put('matching_status_'.auth()->id(), 'processing', now()->addMinutes(10));
         (new MatchUserToJobs(auth()->id()))->handle();
 
-        session()->flash('success', 'Profil berhasil dilengkapi!');
-        $this->redirect(route('matching'), navigate: true);
+        session()->flash('success', 'Profil berhasil dilengkapi! AI sedang menganalisa profilmu...');
+        $this->redirect(route('beranda'), navigate: true);
     }
 
     public function getAvailableMajorsProperty(): array
