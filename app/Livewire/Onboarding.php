@@ -132,7 +132,7 @@ class Onboarding extends Component
         }
 
         Cache::put('matching_status_'.auth()->id(), 'processing', now()->addMinutes(10));
-        MatchUserToJobs::dispatch(auth()->id());
+        (new MatchUserToJobs(auth()->id()))->handle();
 
         session()->flash('success', 'Profil berhasil dilengkapi!');
         $this->redirect(route('matching'), navigate: true);

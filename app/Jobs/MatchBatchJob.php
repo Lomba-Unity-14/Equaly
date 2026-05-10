@@ -17,9 +17,9 @@ class MatchBatchJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tries = 3;
+    public $tries = 2;
 
-    public $backoff = 3;
+    public $backoff = 1;
 
     public function __construct(
         protected int $userId,

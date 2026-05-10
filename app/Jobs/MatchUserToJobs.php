@@ -6,22 +6,11 @@ use App\Data\OnboardingData;
 use App\Models\JobUserMatch;
 use App\Models\JobVacancyData;
 use App\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
-class MatchUserToJobs implements ShouldQueue
+class MatchUserToJobs
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    public $tries = 1;
-
-    public $timeout = 600;
-
     public function __construct(
         protected int $userId
     ) {}
@@ -79,7 +68,7 @@ class MatchUserToJobs implements ShouldQueue
 
             Log::info("MatchUserToJobs: user {$uid} — {$jobs->count()} jobs → ".count($filteredJobs).' after pre-filter');
 
-            $batches = array_chunk($filteredJobs, 10);
+            $batches = array_chunk($filteredJobs, 15);
 
             if (empty($batches)) {
                 Cache::put($statusKey, 'completed', now()->addHours(24));
@@ -160,7 +149,11 @@ class MatchUserToJobs implements ShouldQueue
             $locationLabels[] = OnboardingData::LOCATIONS[$loc] ?? $loc;
         }
 
-        $filtered = $jobs->filter(function ($job) use ($preferredEnvs, $userSkills, $locationLabels) {
+        $filtered = $jobs->filter(function ($job) use ($preferredEnvs, $userSkills, $locationLabels, $userProfile) {
+            if (! $this->passesEducationFilter($userProfile['education_level'] ?? '', $job->education_req)) {
+                return false;
+            }
+
             $workMatch = false;
             if (empty($preferredEnvs)) {
                 $workMatch = true;
@@ -202,5 +195,39 @@ class MatchUserToJobs implements ShouldQueue
         });
 
         return $filtered->values()->toArray();
+    }
+
+    protected function passesEducationFilter(string $userLevel, ?string $jobEducationReq): bool
+    {
+        if (empty($jobEducationReq) || stripos($jobEducationReq, 'Tidak Disebutkan') !== false) {
+            return true;
+        }
+
+        $levels = [
+            'sd' => 1, 'smp' => 2, 'sma' => 3, 'smk' => 3,
+            'd1' => 4, 'd2' => 4, 'd3' => 4, 'd4' => 4, 'diploma' => 4,
+            's1' => 5, 'sarjana' => 5, 'strata 1' => 5, 'strata satu' => 5, 'bachelor' => 5, 'degree' => 5,
+            'profesi' => 6,
+            's2' => 7, 'magister' => 7, 'master' => 7, 'strata 2' => 7, 'strata dua' => 7,
+            's3' => 8, 'doktor' => 8, 'doctor' => 8, 'phd' => 8,
+        ];
+
+        $userLevelValue = $levels[strtolower($userLevel)] ?? 0;
+        if ($userLevelValue === 0) {
+            return true;
+        }
+
+        $highestRequired = 0;
+        foreach ($levels as $keyword => $value) {
+            if (stripos($jobEducationReq, $keyword) !== false) {
+                $highestRequired = max($highestRequired, $value);
+            }
+        }
+
+        if ($highestRequired === 0) {
+            return true;
+        }
+
+        return $userLevelValue >= $highestRequired;
     }
 }

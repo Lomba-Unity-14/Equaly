@@ -250,7 +250,7 @@ class Profil extends Component
     public function rematch(): void
     {
         Cache::put('matching_status_'.auth()->id(), 'processing', now()->addMinutes(10));
-        MatchUserToJobs::dispatch(auth()->id());
+        (new MatchUserToJobs(auth()->id()))->handle();
         $this->redirect(route('matching'), navigate: true);
     }
 

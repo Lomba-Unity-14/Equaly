@@ -34,13 +34,13 @@ class DeepseekService
             ->withHeaders(['Content-Type' => 'application/json'])
             ->post("{$this->baseUrl}/chat/completions", [
                 'model' => $this->model,
-                'temperature' => 0.3,
+                'temperature' => 0.0,
                 'max_tokens' => 4096,
                 'response_format' => ['type' => 'json_object'],
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'You are an expert job matching system for deaf and hard-of-hearing individuals in Indonesia. You assess how well job vacancies match a deaf candidate profile, paying special attention to communication compatibility, disability accommodation, and skill alignment. Always respond with valid JSON only.',
+                        'content' => 'You are an expert job matching system for deaf/hard-of-hearing individuals in Indonesia. Always respond with valid JSON only.',
                     ],
                     [
                         'role' => 'user',
@@ -79,7 +79,6 @@ class DeepseekService
         foreach ($jobs as $i => $job) {
             $jobList .= "Job {$i}: [id: {$job['id']}]\n";
             $jobList .= "- Title: {$job['job_title']}\n";
-            $jobList .= "- Company: {$job['company']}\n";
             $jobList .= "- Category: {$job['job_category']}\n";
             $jobList .= "- Skills required: {$job['skill_req']}\n";
             $jobList .= "- Education: {$job['education_req']}\n";
@@ -89,8 +88,7 @@ class DeepseekService
         }
 
         $disability = implode(', ', $profile['disability_condition'] ?? []);
-        $hearingLabel = OnboardingData::HEARING_LEVELS[$profile['hearing_level'] ?? ''] ?? ($profile['hearing_level'] ?? 'Tidak diketahui');
-        $hearingDesc = OnboardingData::HEARING_DESCRIPTIONS[$profile['hearing_level'] ?? ''] ?? '';
+        $hearingLabel = OnboardingData::HEARING_LEVELS[$profile['hearing_level'] ?? ''] ?? ($profile['hearing_level'] ?? '');
 
         $communicationLabels = [];
         foreach ($profile['communication_preference'] ?? [] as $comm) {
@@ -122,7 +120,7 @@ class DeepseekService
         }
         $subSkills = implode(', ', $subSkillLabels);
 
-        $educationLabel = OnboardingData::EDUCATION_LEVELS[$profile['education_level'] ?? ''] ?? ($profile['education_level'] ?? 'Tidak diketahui');
+        $educationLabel = OnboardingData::EDUCATION_LEVELS[$profile['education_level'] ?? ''] ?? ($profile['education_level'] ?? '');
         $education = $educationLabel;
         if (! empty($profile['education_major'])) {
             $education .= ' — '.$profile['education_major'];
@@ -143,37 +141,31 @@ class DeepseekService
         $age = $profile['age'] ?? null;
 
         return <<<PROMPT
-You are matching a DEAF/HARD-OF-HEARING candidate to job vacancies in Indonesia's Jabodetabek area. Evaluate each job carefully.
+You are matching a deaf/hard-of-hearing candidate to job vacancies in Indonesia's Jabodetabek area.
 
 === CANDIDATE PROFILE ===
 Disability: {$disability}
-Hearing level: {$hearingLabel} — {$hearingDesc}
-Communication preference: {$communication}
-Preferred work environment & accommodation: {$workEnv}
-Skill categories: {$skillCats}
-Specific sub-skills: {$subSkills}
+Hearing: {$hearingLabel}
+Communication: {$communication}
+Work environment: {$workEnv}
+Skills: {$skillCats} — {$subSkills}
 Education: {$education}
 Preferred job types: {$jobTypes}
 Preferred locations: {$locations}
-Age: {$age} years old
+Age: {$age}
 
-=== WEIGHTING ===
-Match scores (0-100) should use these weights:
-- Disability fit (35%): Can this deaf/hard-of-hearing person effectively perform this job? Consider: Does the job require extensive verbal phone communication? Does it require constant in-person verbal meetings without accommodation? Or is it primarily text-based/visual? A job that requires heavy verbal communication should score LOW for deaf candidates. A job that can be done via text/visual means should score HIGH.
-- Skill match (30%): Do the candidate's skill categories and sub-skills align with the job's required skills and category?
-- Work environment (20%): Does the work type and location match the candidate's preferences? Consider: Remote vs on-site, Jabodetabek location match, job type (full-time/part-time/contract), and accommodation needs (sign language interpreter, visual notifications).
-- Communication (10%): Does the job's communication demands match the candidate's specific communication methods? For example: a candidate using BISINDO (sign language) would match well with companies that provide sign language interpreters. A candidate preferring text-based communication would match well with remote/async jobs. A candidate who can lip-read may still manage some in-person roles.
-- Education (5%): Does the candidate's education level and major match the job requirements?
+=== SCORING (0-100) ===
+- Disability fit 35%: Can a deaf person effectively do this job given its communication demands? Jobs requiring heavy verbal phone/meeting communication without accommodation = LOW score. Text-based/visual jobs = HIGH score.
+- Skill match 30%: How well do the candidate's skill categories and sub-skills align with the job's required skills?
+- Environment fit 20%: How well does the work type, location, and accommodation match the candidate's preferences?
+- Communication 10%: How well do the job's communication methods match the candidate's communication methods?
+- Education 5%: How well does the candidate's education level and major match the job requirements?
 
 === SCORING GUIDE ===
-0-20: Not compatible at all — job requires extensive verbal communication without accommodation
-21-40: Poor match — significant communication or skill gaps
-41-60: Somewhat compatible — possible with accommodations
-61-80: Good match — candidate can perform well with existing skills and communication methods
-81-100: Excellent match — strong alignment across all dimensions
+0-20: No compatibility  21-40: Poor  41-60: Fair  61-80: Good match  81-100: Excellent match
 
 === RESPONSE FORMAT ===
-Return ONLY a JSON object with this exact structure:
+Return ONLY JSON:
 {
   "matches": [
     {
@@ -185,7 +177,7 @@ Return ONLY a JSON object with this exact structure:
       "environment_score": <0-100>,
       "communication_score": <0-100>,
       "education_score": <0-100>,
-      "match_reason": "<1-2 sentence summary in Bahasa Indonesia explaining WHY this job is suitable or not suitable for this deaf candidate. Mention specific communication considerations.>"
+      "match_reason": "<1 sentence summary in Bahasa Indonesia>"
     }
   ]
 }

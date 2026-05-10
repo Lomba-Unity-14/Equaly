@@ -26,4 +26,5 @@ Homestead.yaml
 Thumbs.db
 
 public/temp-ui.html
-docs/research/
+public/error.md
+docs/
