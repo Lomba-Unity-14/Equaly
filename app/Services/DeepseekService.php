@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Data\OnboardingData;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -33,13 +34,13 @@ class DeepseekService
             ->withHeaders(['Content-Type' => 'application/json'])
             ->post("{$this->baseUrl}/chat/completions", [
                 'model' => $this->model,
-                'temperature' => 0.3,
+                'temperature' => 0.0,
                 'max_tokens' => 4096,
                 'response_format' => ['type' => 'json_object'],
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'You are an expert job matching system for people with disabilities. You assess how well job vacancies match a candidate profile, paying special attention to disability compatibility. Always respond with valid JSON only.',
+                        'content' => 'You are an expert job matching system for deaf/hard-of-hearing individuals in Indonesia. Always respond with valid JSON only.',
                     ],
                     [
                         'role' => 'user',
@@ -83,40 +84,88 @@ class DeepseekService
             $jobList .= "- Education: {$job['education_req']}\n";
             $jobList .= "- Work type: {$job['work_type']}\n";
             $jobList .= "- Location: {$job['location']}\n";
-            $jobList .= "- Description: " . mb_substr($job['jobdesk'], 0, 800) . "\n\n";
+            $jobList .= '- Description: '.mb_substr($job['jobdesk'], 0, 800)."\n\n";
         }
 
         $disability = implode(', ', $profile['disability_condition'] ?? []);
-        $skills = implode(', ', $profile['skills'] ?? []);
-        $communication = implode(', ', $profile['communication_preference'] ?? []);
-        $workEnv = implode(', ', $profile['work_environment'] ?? []);
+        $hearingLabel = OnboardingData::HEARING_LEVELS[$profile['hearing_level'] ?? ''] ?? ($profile['hearing_level'] ?? '');
+
+        $communicationLabels = [];
+        foreach ($profile['communication_preference'] ?? [] as $comm) {
+            $communicationLabels[] = OnboardingData::COMMUNICATION_PREFERENCES[$comm] ?? $comm;
+        }
+        $communication = implode(', ', $communicationLabels);
+
+        $workEnvLabels = [];
+        foreach ($profile['work_environment'] ?? [] as $env) {
+            $workEnvLabels[] = OnboardingData::WORK_ENVIRONMENTS[$env] ?? $env;
+        }
+        $workEnv = implode(', ', $workEnvLabels);
+
+        $skillCategoryLabels = [];
+        foreach ($profile['skill_categories'] ?? [] as $cat) {
+            $skillCategoryLabels[] = OnboardingData::SKILL_CATEGORIES[$cat] ?? $cat;
+        }
+        $skillCats = implode(', ', $skillCategoryLabels);
+
+        $subSkillLabels = [];
+        foreach ($profile['sub_skills'] ?? [] as $sub) {
+            foreach (OnboardingData::SKILL_SUBS as $cat => $subs) {
+                $label = $subs[$sub] ?? null;
+                if ($label) {
+                    $subSkillLabels[] = $label;
+                    break;
+                }
+            }
+        }
+        $subSkills = implode(', ', $subSkillLabels);
+
+        $educationLabel = OnboardingData::EDUCATION_LEVELS[$profile['education_level'] ?? ''] ?? ($profile['education_level'] ?? '');
+        $education = $educationLabel;
+        if (! empty($profile['education_major'])) {
+            $education .= ' — '.$profile['education_major'];
+        }
+
+        $jobTypeLabels = [];
+        foreach ($profile['job_types'] ?? [] as $jt) {
+            $jobTypeLabels[] = OnboardingData::JOB_TYPES[$jt] ?? $jt;
+        }
+        $jobTypes = implode(', ', $jobTypeLabels);
+
+        $locationLabels = [];
+        foreach ($profile['preferred_locations'] ?? [] as $loc) {
+            $locationLabels[] = OnboardingData::LOCATIONS[$loc] ?? $loc;
+        }
+        $locations = implode(', ', $locationLabels);
+
+        $age = $profile['age'] ?? null;
 
         return <<<PROMPT
-You are matching a candidate with disabilities to job vacancies. Evaluate each job carefully.
+You are matching a deaf/hard-of-hearing candidate to job vacancies in Indonesia's Jabodetabek area.
 
 === CANDIDATE PROFILE ===
-Disability condition: {$disability}
-Skills: {$skills}
-Communication preference: {$communication}
-Preferred work environment: {$workEnv}
+Disability: {$disability}
+Hearing: {$hearingLabel}
+Communication: {$communication}
+Work environment: {$workEnv}
+Skills: {$skillCats} — {$subSkills}
+Education: {$education}
+Preferred job types: {$jobTypes}
+Preferred locations: {$locations}
+Age: {$age}
 
-=== WEIGHTING ===
-Match scores (0-100) should use these weights:
-- Disability fit (35%): Can this person with their disability actually perform this job based on the job description?
-- Skill match (30%): Do their skills align with the required skills?
-- Work environment (20%): Does the work type (Remote/Hybrid/On-site/Full-time/Contract) match their preference?
-- Communication (10%): Does the job's communication demands match their preference (text/verbal/sign language)?
-- Education (5%): Does their education level match requirements?
+=== SCORING (0-100) ===
+- Disability fit 35%: Can a deaf person effectively do this job given its communication demands? Jobs requiring heavy verbal phone/meeting communication without accommodation = LOW score. Text-based/visual jobs = HIGH score.
+- Skill match 30%: How well do the candidate's skill categories and sub-skills align with the job's required skills?
+- Environment fit 20%: How well does the work type, location, and accommodation match the candidate's preferences?
+- Communication 10%: How well do the job's communication methods match the candidate's communication methods?
+- Education 5%: How well does the candidate's education level and major match the job requirements?
 
 === SCORING GUIDE ===
-0-20: Not compatible at all
-21-40: Poor match
-41-60: Somewhat compatible
-61-80: Good match
-81-100: Excellent match
+0-20: No compatibility  21-40: Poor  41-60: Fair  61-80: Good match  81-100: Excellent match
 
 === RESPONSE FORMAT ===
-Return ONLY a JSON object with this exact structure:
+Return ONLY JSON:
 {
   "matches": [
     {
@@ -128,7 +177,7 @@ Return ONLY a JSON object with this exact structure:
       "environment_score": <0-100>,
       "communication_score": <0-100>,
       "education_score": <0-100>,
-      "match_reason": "<1-2 sentence summary in Bahasa Indonesia>"
+      "match_reason": "<1 sentence summary in Bahasa Indonesia>"
     }
   ]
 }

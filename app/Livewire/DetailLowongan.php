@@ -74,7 +74,7 @@ class DetailLowongan extends Component
         );
 
         $url = $this->job->url;
-        $this->js('window.open(' . json_encode($url) . ', "_blank")');
+        $this->js('window.open('.json_encode($url).', "_blank")');
     }
 
     public function render()

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'url',
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class JobVacancyData extends Model
 {
-    public function matches(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function matches(): HasMany
     {
         return $this->hasMany(JobUserMatch::class);
     }
