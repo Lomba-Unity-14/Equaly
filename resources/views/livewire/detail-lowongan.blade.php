@@ -15,74 +15,72 @@
             {{ $job->location }}
         </div>
         <div class="flex flex-wrap gap-2 justify-center">
-            @if($match)
-                @php
-                    $scoreVariant = $match->match_score >= 75 ? 'high' : ($match->match_score >= 60 ? 'medium' : 'low');
-                    $scoreIcon = $match->match_score >= 75 ? 'check_circle' : ($match->match_score >= 60 ? 'info' : 'warning');
-                @endphp
-                <x-badge :icon="$scoreIcon" :text="'Match: ' . $match->match_score . '%'" :variant="$scoreVariant" />
-            @endif
             @if($job->work_type)
                 <x-badge icon="schedule" :text="$job->work_type" />
             @endif
         </div>
     </section>
 
-    @if($match && $match->match_reason)
-    <x-detail-section title="Alasan Kecocokan">
-        <p class="font-body-lg text-body-lg text-text-secondary">{{ $match->match_reason }}</p>
+    @if($match)
+    <x-detail-section title="Kecocokan">
+        @php $tier = \App\Data\OnboardingData::matchTier($match->match_score); @endphp
+        <div class="flex items-start gap-3 mb-4">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-full font-label-caps text-label-caps
+                {{ $tier['variant'] === 'high' ? 'bg-score-high-bg text-score-high-text' : '' }}
+                {{ $tier['variant'] === 'medium' ? 'bg-score-medium-bg text-score-medium-text' : '' }}
+                {{ $tier['variant'] === 'low' ? 'bg-score-low-bg text-score-low-text' : '' }}">
+                <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">{{ $tier['icon'] }}</span>
+                {{ $tier['label'] }}
+            </div>
+        </div>
+        @if($tier['desc'])
+            <p class="font-body-sm text-body-sm text-text-secondary mb-4">{{ $tier['desc'] }}</p>
+        @endif
+        @if($match->match_reason)
+            <div class="bg-surface-container-low rounded-xl p-4">
+                <p class="font-body-lg text-body-lg text-text-secondary">{{ $match->match_reason }}</p>
+            </div>
+        @endif
     </x-detail-section>
     @endif
 
-    @if($match)
-    <x-detail-section title="Skor Kecocokan">
-        <div class="flex flex-col gap-2">
-            <div class="flex items-center justify-between">
-                <span class="font-body-sm text-body-sm text-text-secondary">Disability Fit</span>
-                <div class="flex items-center gap-2">
-                    <div class="w-32 h-2 bg-surface-container-low rounded-full overflow-hidden">
-                        <div class="h-full bg-primary rounded-full" style="width: {{ $match->disability_score }}%"></div>
-                    </div>
-                    <span class="font-label-caps text-label-caps text-text-primary w-8 text-right">{{ $match->disability_score }}%</span>
+    @if($academyRecommendation)
+    <x-detail-section title="Tingkatkan Peluangmu">
+        @php
+            $rec = $academyRecommendation;
+            $typeLabels = [
+                'pelatihan' => ['label' => 'Pelatihan', 'icon' => 'school', 'variant' => 'medium'],
+                'sertifikasi' => ['label' => 'Sertifikasi', 'icon' => 'verified', 'variant' => 'high'],
+            ];
+            $recType = $typeLabels[$rec->type] ?? ['label' => $rec->type, 'icon' => 'school', 'variant' => 'default'];
+        @endphp
+        <p class="font-body-sm text-body-sm text-text-secondary mb-3">Perkuat skillmu dengan program berikut agar peluangmu lebih besar:</p>
+        <a href="{{ route('academy.detail', $rec->id) }}" wire:navigate
+            class="block bg-surface-container-low rounded-xl p-3 hover:shadow-sm transition-shadow active:scale-[0.98] border border-border-subtle">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-primary-fixed-dim flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings: 'FILL' 1;">{{ $recType['icon'] }}</span>
                 </div>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="font-body-sm text-body-sm text-text-secondary">Skill</span>
-                <div class="flex items-center gap-2">
-                    <div class="w-32 h-2 bg-surface-container-low rounded-full overflow-hidden">
-                        <div class="h-full bg-primary rounded-full" style="width: {{ $match->skill_score }}%"></div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="font-body-lg text-body-lg font-semibold text-text-primary leading-tight">{{ $rec->name }}</h4>
+                    <p class="font-body-sm text-body-sm text-text-secondary mt-0.5">
+                        @if($rec->duration)
+                            <span>{{ $rec->duration }}</span>
+                        @endif
+                        @if($rec->duration && $rec->level)
+                            <span> · </span>
+                        @endif
+                        @if($rec->level)
+                            <span>{{ $rec->level }}</span>
+                        @endif
+                    </p>
+                    <div class="flex gap-2 mt-2">
+                        <x-badge :icon="$recType['icon']" :text="$recType['label']" :variant="$recType['variant']" />
                     </div>
-                    <span class="font-label-caps text-label-caps text-text-primary w-8 text-right">{{ $match->skill_score }}%</span>
                 </div>
+                <span class="material-symbols-outlined text-outline shrink-0 mt-2">chevron_right</span>
             </div>
-            <div class="flex items-center justify-between">
-                <span class="font-body-sm text-body-sm text-text-secondary">Work Environment</span>
-                <div class="flex items-center gap-2">
-                    <div class="w-32 h-2 bg-surface-container-low rounded-full overflow-hidden">
-                        <div class="h-full bg-primary rounded-full" style="width: {{ $match->environment_score }}%"></div>
-                    </div>
-                    <span class="font-label-caps text-label-caps text-text-primary w-8 text-right">{{ $match->environment_score }}%</span>
-                </div>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="font-body-sm text-body-sm text-text-secondary">Communication</span>
-                <div class="flex items-center gap-2">
-                    <div class="w-32 h-2 bg-surface-container-low rounded-full overflow-hidden">
-                        <div class="h-full bg-primary rounded-full" style="width: {{ $match->communication_score }}%"></div>
-                    </div>
-                    <span class="font-label-caps text-label-caps text-text-primary w-8 text-right">{{ $match->communication_score }}%</span>
-                </div>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="font-body-sm text-body-sm text-text-secondary">Education</span>
-                <div class="flex items-center gap-2">
-                    <div class="w-32 h-2 bg-surface-container-low rounded-full overflow-hidden">
-                        <div class="h-full bg-primary rounded-full" style="width: {{ $match->education_score }}%"></div>
-                    </div>
-                    <span class="font-label-caps text-label-caps text-text-primary w-8 text-right">{{ $match->education_score }}%</span>
-                </div>
-            </div>
-        </div>
+        </a>
     </x-detail-section>
     @endif
 
@@ -92,6 +90,12 @@
         </div>
     </x-detail-section>
 
+    @if($job->education_req)
+    <x-detail-section title="Pendidikan">
+        <p class="font-body-lg text-body-lg text-text-secondary">{{ $job->education_req }}</p>
+    </x-detail-section>
+    @endif
+
     @if($job->skill_req)
     <x-detail-section title="Skill yang Dibutuhkan">
         <div class="flex flex-wrap gap-2">
@@ -99,12 +103,6 @@
                 <span class="inline-flex items-center px-3 py-1.5 bg-surface-container-low rounded-full font-label-caps text-label-caps text-on-surface-variant">{{ trim($skill) }}</span>
             @endforeach
         </div>
-    </x-detail-section>
-    @endif
-
-    @if($job->education_req)
-    <x-detail-section title="Pendidikan">
-        <p class="font-body-lg text-body-lg text-text-secondary">{{ $job->education_req }}</p>
     </x-detail-section>
     @endif
 

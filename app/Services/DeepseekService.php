@@ -16,7 +16,7 @@ class DeepseekService
 
     public function __construct()
     {
-        $this->model = config('services.deepseek.model', 'deepseek-chat');
+        $this->model = config('services.deepseek.model', 'deepseek-v4-pro');
         $this->threshold = (int) config('services.deepseek.match_threshold', 60);
     }
 
@@ -28,26 +28,32 @@ class DeepseekService
 
         $prompt = $this->buildMatchingPrompt($userProfile, $jobs);
 
+        $payload = [
+            'model' => $this->model,
+            'temperature' => 0.0,
+            'max_tokens' => 4096,
+            'response_format' => ['type' => 'json_object'],
+            'messages' => [
+                [
+                    'role' => 'system',
+                    'content' => 'You are an expert job matching system for deaf/hard-of-hearing individuals in Indonesia. Always respond with valid JSON only.',
+                ],
+                [
+                    'role' => 'user',
+                    'content' => $prompt,
+                ],
+            ],
+        ];
+
+        if ($this->model === 'deepseek-v4-pro') {
+            $payload['thinking'] = ['type' => 'disabled'];
+        }
+
         $response = Http::retry(3, 2000)
-            ->timeout($this->model === 'deepseek-reasoner' ? 120 : 45)
+            ->timeout(in_array($this->model, ['deepseek-reasoner', 'deepseek-v4-pro']) ? 120 : 45)
             ->withToken(config('services.deepseek.api_key'))
             ->withHeaders(['Content-Type' => 'application/json'])
-            ->post("{$this->baseUrl}/chat/completions", [
-                'model' => $this->model,
-                'temperature' => 0.0,
-                'max_tokens' => 4096,
-                'response_format' => ['type' => 'json_object'],
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => 'You are an expert job matching system for deaf/hard-of-hearing individuals in Indonesia. Always respond with valid JSON only.',
-                    ],
-                    [
-                        'role' => 'user',
-                        'content' => $prompt,
-                    ],
-                ],
-            ]);
+            ->post("{$this->baseUrl}/chat/completions", $payload);
 
         if (! $response->successful()) {
             Log::error('Deepseek API error', [

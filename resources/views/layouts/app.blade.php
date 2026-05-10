@@ -48,11 +48,11 @@
                     style="font-variation-settings: 'FILL' {{ request()->routeIs('lowongan') ? 1 : 0 }};">work</span>
                 <span class="text-[12px] font-medium mt-1">Lowongan</span>
             </a>
-            <a href="{{ route('edukasi') }}" wire:navigate
-                class="flex flex-col items-center justify-center py-1 min-w-touch-target-min min-h-touch-target-min active:scale-95 transition-transform {{ request()->routeIs('edukasi') ? 'text-primary' : 'text-secondary hover:text-primary' }}">
+            <a href="{{ route('academy') }}" wire:navigate
+                class="flex flex-col items-center justify-center py-1 min-w-touch-target-min min-h-touch-target-min active:scale-95 transition-transform {{ request()->routeIs('academy') ? 'text-primary' : 'text-secondary hover:text-primary' }}">
                 <span class="material-symbols-outlined"
-                    style="font-variation-settings: 'FILL' {{ request()->routeIs('edukasi') ? 1 : 0 }};">school</span>
-                <span class="text-[12px] font-medium mt-1">Edukasi</span>
+                    style="font-variation-settings: 'FILL' {{ request()->routeIs('academy') ? 1 : 0 }};">school</span>
+                <span class="text-[12px] font-medium mt-1">Academy</span>
             </a>
             <a href="{{ route('profil') }}" wire:navigate
                 class="flex flex-col items-center justify-center py-1 min-w-touch-target-min min-h-touch-target-min active:scale-95 transition-transform {{ request()->routeIs('profil') ? 'text-primary' : 'text-secondary hover:text-primary' }}">

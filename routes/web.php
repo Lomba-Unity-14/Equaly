@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Livewire\Academy;
+use App\Livewire\AcademyDetail;
 use App\Livewire\Beranda;
 use App\Livewire\DetailLowongan;
-use App\Livewire\Edukasi;
 use App\Livewire\HistoriLamaran;
 use App\Livewire\Lowongan;
 use App\Livewire\Matching;
@@ -31,7 +32,8 @@ Route::middleware(['auth', 'onboarding'])->group(function () {
 
 Route::get('/lowongan', Lowongan::class)->name('lowongan');
 Route::get('/lowongan/{lowongan}', DetailLowongan::class)->name('lowongan.detail');
-Route::get('/edukasi', Edukasi::class)->name('edukasi');
+Route::get('/academy', Academy::class)->name('academy');
+Route::get('/academy/{academy}', AcademyDetail::class)->name('academy.detail');
 
 Route::middleware(['auth', 'onboarding'])->group(function () {
     Route::get('/histori', HistoriLamaran::class)->name('histori.lamaran');
