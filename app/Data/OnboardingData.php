@@ -43,6 +43,17 @@ class OnboardingData
         'tekstil_manufaktur' => 'Tekstil & Manufaktur',
     ];
 
+    public const SKILL_CATEGORY_ICONS = [
+        'it_programming' => 'code',
+        'desain_kreatif' => 'palette',
+        'kuliner_tata_boga' => 'restaurant_menu',
+        'administrasi_data' => 'description',
+        'retail_logistik' => 'inventory_2',
+        'otomotif_teknisi' => 'build',
+        'hospitality' => 'room_service',
+        'tekstil_manufaktur' => 'manufacturing',
+    ];
+
     public const SKILL_SUBS = [
         'it_programming' => [
             'web_developer' => 'Web Developer',
