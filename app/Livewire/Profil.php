@@ -155,6 +155,29 @@ class Profil extends Component
 
                 return ['skill_categories' => $skillCategoriesData];
             },
+            'profil_diri' => [
+                'hearing_level' => $this->hearing_level,
+                'education_level' => $this->education_level,
+                'education_major' => $this->education_major ?: null,
+            ],
+            'preferensi' => [
+                'communication_preference' => $this->communication_preference,
+                'work_environment' => $this->work_environment,
+                'job_types' => $this->job_types,
+                'preferred_locations' => $this->preferred_locations,
+            ],
+            'keahlian' => function () {
+                $skillCategoriesData = [];
+                foreach ($this->skill_categories as $category) {
+                    $categorySubs = array_intersect($this->sub_skills, array_keys(OnboardingData::SKILL_SUBS[$category] ?? []));
+                    $skillCategoriesData[] = [
+                        'category' => $category,
+                        'subs' => array_values($categorySubs),
+                    ];
+                }
+
+                return ['skill_categories' => $skillCategoriesData];
+            },
             default => [],
         };
 

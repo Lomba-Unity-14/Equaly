@@ -21,7 +21,7 @@
 
 <div class="flex flex-col gap-stack-lg">
     {{-- Header --}}
-    <section class="bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 flex flex-col items-center text-center">
+    <section class="bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 flex flex-col items-center text-center">
         <div class="w-16 h-16 rounded-2xl bg-primary-fixed-dim flex items-center justify-center mb-4">
             <span class="material-symbols-outlined text-[36px] text-primary" style="font-variation-settings: 'FILL' 1;">{{ $typeInfo['icon'] }}</span>
         </div>
@@ -125,13 +125,13 @@
     <div class="mt-2 mb-4">
         @if($partner->website_url)
             <a href="{{ $partner->website_url }}" target="_blank" rel="noopener noreferrer"
-                class="w-full flex items-center justify-center bg-primary text-on-primary rounded-xl py-3 px-8 font-label-caps text-label-caps font-bold active:scale-[0.98] transition-all hover:bg-primary-fixed-variant min-h-[48px] shadow-md">
+                class="w-full flex items-center justify-center bg-primary text-on-primary font-bold text-body-lg rounded-xl py-4 shadow-sm hover:brightness-110 active:scale-[0.98] transition-all min-h-touch-target-min cursor-pointer">
                 <span class="material-symbols-outlined mr-2">open_in_new</span>
                 Daftar Program
             </a>
         @else
             <div
-                class="w-full flex items-center justify-center bg-surface-container-high text-text-secondary rounded-xl py-3 px-8 font-label-caps text-label-caps min-h-[48px]">
+                class="w-full flex items-center justify-center bg-surface-container text-on-surface-variant font-medium text-body-lg rounded-xl py-4 min-h-touch-target-min">
                 <span class="material-symbols-outlined mr-2">hourglass_empty</span>
                 Segera Hadir
             </div>
