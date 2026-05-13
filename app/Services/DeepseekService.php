@@ -85,12 +85,13 @@ class DeepseekService
         foreach ($jobs as $i => $job) {
             $jobList .= "Job {$i}: [id: {$job['id']}]\n";
             $jobList .= "- Title: {$job['job_title']}\n";
-            $jobList .= "- Category: {$job['job_category']}\n";
+            $jobList .= "- Category: {$job['category']}\n";
             $jobList .= "- Skills required: {$job['skill_req']}\n";
             $jobList .= "- Education: {$job['education_req']}\n";
             $jobList .= "- Work type: {$job['work_type']}\n";
+            $jobList .= "- Employment type: {$job['employment_type']}\n";
             $jobList .= "- Location: {$job['location']}\n";
-            $jobList .= '- Description: '.mb_substr($job['jobdesk'], 0, 800)."\n\n";
+            $jobList .= '- Description: '.mb_substr($job['job_detail'], 0, 800)."\n\n";
         }
 
         $disability = implode(', ', $profile['disability_condition'] ?? []);

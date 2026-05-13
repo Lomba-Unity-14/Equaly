@@ -2,8 +2,8 @@
     <section
         class="bg-surface rounded-2xl border border-border-subtle shadow-sm p-6 flex flex-col items-center text-center">
         <div class="w-20 h-20 bg-surface-container rounded-xl flex items-center justify-center mb-stack-md overflow-hidden">
-            @if($job->image_logo_url)
-                <img src="{{ $job->image_logo_url }}" alt="{{ $job->company }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\'material-symbols-outlined text-[48px] text-secondary\'>domain</span>'">
+            @if($job->company_logo_url)
+                <img src="{{ $job->company_logo_url }}" alt="{{ $job->company }}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\'material-symbols-outlined text-[48px] text-secondary\'>domain</span>'">
             @else
                 <span class="material-symbols-outlined text-[48px] text-secondary">domain</span>
             @endif
@@ -15,11 +15,19 @@
             {{ $job->location }}
         </div>
         <div class="flex flex-wrap gap-2 justify-center">
-            @if($job->work_type)
-                <x-badge icon="schedule" :text="$job->work_type" />
+            @if($job->employment_type)
+                <x-badge icon="work_history" :text="$job->employment_type" />
             @endif
         </div>
     </section>
+
+    @if($job->salary)
+    <x-detail-section title="Gaji">
+        <span class="font-body-lg text-body-lg text-text-primary">
+            {{ preg_replace('/(Rp\s[\d.]+)\s+(?=Rp)/', '$1 - ', $job->salary) }}
+        </span>
+    </x-detail-section>
+    @endif
 
     @if($match)
     <x-detail-section title="Kecocokan">
@@ -86,23 +94,13 @@
 
     <x-detail-section title="Deskripsi Pekerjaan">
         <div class="font-body-lg text-body-lg text-text-secondary prose prose-sm max-w-none">
-            {!! nl2br(e(Str::limit($job->jobdesk, 2000))) !!}
+            {!! nl2br(e(Str::limit($job->job_detail, 2000))) !!}
         </div>
     </x-detail-section>
 
     @if($job->education_req)
     <x-detail-section title="Pendidikan">
         <p class="font-body-lg text-body-lg text-text-secondary">{{ $job->education_req }}</p>
-    </x-detail-section>
-    @endif
-
-    @if($job->skill_req)
-    <x-detail-section title="Skill yang Dibutuhkan">
-        <div class="flex flex-wrap gap-2">
-            @foreach(explode(',', $job->skill_req) as $skill)
-                <span class="inline-flex items-center px-3 py-1.5 bg-surface-container-low rounded-full font-label-caps text-label-caps text-on-surface-variant">{{ trim($skill) }}</span>
-            @endforeach
-        </div>
     </x-detail-section>
     @endif
 
@@ -144,8 +142,8 @@
     <div class="mt-6 mb-2">
         <button wire:click="apply"
             class="w-full flex items-center justify-center bg-primary text-on-primary rounded-xl py-3 px-8 font-label-caps text-label-caps font-bold active:scale-[0.98] transition-all hover:bg-primary-fixed-variant min-h-[48px] shadow-md">
-            <span class="material-symbols-outlined mr-2">send</span>
-            Lamar Sekarang
+            <span class="material-symbols-outlined mr-2">open_in_new</span>
+            Lihat Lowongan
         </button>
     </div>
 </div>

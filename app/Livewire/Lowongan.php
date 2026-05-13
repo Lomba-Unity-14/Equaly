@@ -75,8 +75,8 @@ class Lowongan extends Component
                     ($job->job_title ?? '').' '.
                     ($job->company ?? '').' '.
                     ($job->skill_req ?? '').' '.
-                    ($job->job_category ?? '').' '.
-                    ($job->jobdesk ?? '')
+                    ($job->category ?? '').' '.
+                    ($job->job_detail ?? '')
                 );
 
                 return str_contains($haystack, $needle);
