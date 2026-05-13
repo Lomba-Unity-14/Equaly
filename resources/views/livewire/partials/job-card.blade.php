@@ -29,20 +29,29 @@
         </div>
         <div class="flex flex-wrap gap-2">
             @if($match->match_score >= 60)
-                @php $tier = \App\Data\OnboardingData::matchTier($match->match_score); @endphp
+                @php $tier = \App\Data\OnboardingData::matchTier($match->match_score, $match->id); @endphp
                 <x-badge :icon="$tier['icon']" :text="$tier['label']" :variant="$tier['variant']" />
             @endif
             @if($job->employment_type)
                 <x-badge icon="work_history" :text="$job->employment_type" />
             @endif
-            @php $agg = $companyAggregates[$job->company] ?? null; @endphp
-            @if($agg && $agg->total > 0)
-                @php
-                    $pct = round(($agg->friendly / $agg->total) * 100);
-                    $isFriendly = $pct >= 50;
-                @endphp
-                <x-badge icon="{{ $isFriendly ? 'diversity_3' : 'warning' }}" :text="$isFriendly ? 'Ramah Disabilitas' : 'Kurang Ramah'" :variant="$isFriendly ? 'high' : 'low'" />
-            @endif
+        </div>
+
+        @php
+            $agg = $companyAggregates[$job->company] ?? null;
+            $trivia = \App\Data\OnboardingData::getDisabilityTrivia($agg, $job->job_detail);
+        @endphp
+        @php
+            $triviaClasses = [
+                'good' => 'bg-score-high-bg text-score-high-text border-score-high-text/20',
+                'bad' => 'bg-score-low-bg text-score-low-text border-score-low-text/20',
+                'neutral' => 'bg-surface-container-high text-on-surface border-outline-variant',
+                'noinfo' => 'bg-surface-container-low text-on-surface-variant border-border-subtle',
+            ];
+        @endphp
+        <div class="flex items-start gap-2 rounded-xl p-3 mt-2 border {{ $triviaClasses[$trivia['variant']] }}">
+            <span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">{{ $trivia['icon'] }}</span>
+            <span class="font-body-sm text-body-sm">{{ $trivia['text'] }}</span>
         </div>
     </article>
 </a>

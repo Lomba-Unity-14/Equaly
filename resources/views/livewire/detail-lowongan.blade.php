@@ -31,7 +31,7 @@
 
     @if($match)
     <x-detail-section title="Kecocokan">
-        @php $tier = \App\Data\OnboardingData::matchTier($match->match_score); @endphp
+        @php $tier = \App\Data\OnboardingData::matchTier($match->match_score, $match->id); @endphp
         <div class="flex items-start gap-3 mb-4">
             <div class="flex items-center gap-2 px-3 py-1.5 rounded-full font-label-caps text-label-caps
                 {{ $tier['variant'] === 'high' ? 'bg-score-high-bg text-score-high-text' : '' }}
@@ -104,22 +104,28 @@
     </x-detail-section>
     @endif
 
-    @if(!empty($companyScore) && $companyScore['total'] > 0)
-    <x-detail-section title="Skor Perusahaan">
-        <div class="flex items-center gap-3 mb-4">
-            @if($companyScore['score'] >= 50)
-                <div class="bg-score-high-bg text-score-high-text font-label-caps text-label-caps px-3 py-1.5 rounded-full inline-flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-                    Ramah Disabilitas
-                </div>
-            @else
-                <div class="bg-score-low-bg text-score-low-text font-label-caps text-label-caps px-3 py-1.5 rounded-full inline-flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">warning</span>
-                    Kurang Ramah Disabilitas
-                </div>
-            @endif
-            <span class="font-body-sm text-body-sm text-outline">{{ $companyScore['total'] }} ulasan</span>
+    @php
+        $agg = !empty($companyScore) && $companyScore['total'] > 0 ? (object) $companyScore : null;
+        $trivia = \App\Data\OnboardingData::getDisabilityTrivia($agg, $job->job_detail);
+        $triviaClasses = [
+            'good' => 'bg-score-high-bg text-score-high-text border-score-high-text/20',
+            'bad' => 'bg-score-low-bg text-score-low-text border-score-low-text/20',
+            'neutral' => 'bg-surface-container-high text-on-surface border-outline-variant',
+            'noinfo' => 'bg-surface-container-low text-on-surface-variant border-border-subtle',
+        ];
+    @endphp
+    <x-detail-section title="Disability Friendly">
+        <div class="flex items-start gap-2 rounded-xl p-3 border {{ $triviaClasses[$trivia['variant']] }}">
+            <span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">{{ $trivia['icon'] }}</span>
+            <span class="font-body-sm text-body-sm">{{ $trivia['text'] }}</span>
         </div>
+    </x-detail-section>
+
+    @if(!empty($companyScore) && $companyScore['total'] > 0)
+    <x-detail-section title="Ulasan Pengguna">
+        @if($companyScore['total'] > 0)
+            <p class="font-body-sm text-body-sm text-outline mb-3">{{ $companyScore['total'] }} ulasan · {{ $companyScore['friendly'] }} positif</p>
+        @endif
 
         <div class="flex flex-col gap-3">
             @foreach(array_slice($companyReviews, 0, 5) as $review)

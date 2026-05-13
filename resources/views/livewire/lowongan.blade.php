@@ -27,8 +27,8 @@
                 <div class="bg-primary-container/20 rounded-xl p-3 border border-primary/20 flex items-start gap-2">
                     <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">psychology_alt</span>
                     <div>
-                        <p class="font-body-sm text-body-sm text-on-primary-container">
-                            <strong>AI sedang menganalisa profilmu.</strong>
+                        <p class="font-body-sm text-body-sm text-on-surface">
+                            <strong>AI sedang melakukan analisis, kami perlu waktu untuk mencocokkan profil kamu.</strong>
                             Skor kecocokan akan muncul setelah selesai. Menampilkan {{ $matches->count() }} lowongan berdasarkan keahlianmu.
                         </p>
                     </div>
@@ -37,7 +37,7 @@
                 <div class="bg-error-container/20 rounded-xl p-3 border border-error/20 flex items-start gap-2">
                     <span class="material-symbols-outlined text-error text-[18px] shrink-0 mt-0.5">error</span>
                     <p class="font-body-sm text-body-sm text-on-error-container">
-                        AI mengalami kendala saat menganalisa. Tekan tombol coba lagi di Beranda untuk memulai ulang.
+                        AI mengalami kendala saat analisis. Tekan tombol coba lagi di Beranda untuk memulai ulang.
                     </p>
                 </div>
             @endif
