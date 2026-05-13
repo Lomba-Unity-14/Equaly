@@ -28,6 +28,14 @@
         </main>
 
     </div>
+
+    <!-- Decorative Background -->
+    <div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none overflow-hidden">
+        <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary-fixed-dim opacity-20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-secondary-fixed opacity-30 rounded-full blur-[100px]"></div>
+    </div>
+
+    @stack('scripts')
 </body>
 
 </html>

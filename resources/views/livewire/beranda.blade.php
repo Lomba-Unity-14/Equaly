@@ -24,40 +24,25 @@
                 $recType = $typeLabels[$rec->type] ?? ['label' => $rec->type, 'icon' => 'school', 'variant' => 'default'];
                 $catLabel = \App\Data\OnboardingData::SKILL_CATEGORIES[$rec->category] ?? ($rec->category === 'general' ? 'Umum' : $rec->category);
             @endphp
-            <section class="bg-linear-to-br from-secondary-container to-primary-fixed-dim rounded-3xl p-5 relative overflow-hidden shadow-sm border border-white/50">
+            <a href="{{ route('academy.detail', $rec->id) }}" wire:navigate
+                class="block bg-linear-to-br from-primary-container/40 to-secondary-container/70 border border-primary/30 rounded-2xl shadow-sm p-5 relative overflow-hidden hover:brightness-110 active:scale-[0.98] transition-all">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="material-symbols-outlined text-primary text-xl">school</span>
+                    <h2 class="font-h2 text-h2 text-text-primary">Rekomendasi Academy</h2>
+                </div>
                 <div class="relative z-10">
-                    <div class="flex items-center gap-2 mb-3">
-                        <span class="material-symbols-outlined text-[20px] text-on-secondary-container">school</span>
-                        <h2 class="font-body-lg text-body-lg font-semibold text-on-secondary-container">Rekomendasi Academy</h2>
+                    <h3 class="font-body-lg text-body-lg font-bold text-on-surface">{{ $rec->name }}</h3>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                        {{ $catLabel }}{{ $rec->duration ? ' · ' . $rec->duration : '' }}
+                    </p>
+                    <div class="mt-2">
+                        <x-badge :icon="$recType['icon']" :text="$recType['label']" :variant="$recType['variant']" />
                     </div>
-                    <a href="{{ route('academy.detail', $rec->id) }}" wire:navigate
-                        class="block bg-surface/80 backdrop-blur-sm rounded-xl p-3 hover:bg-surface/90 transition-all active:scale-[0.98] border border-white/40">
-                        <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-primary-fixed-dim flex items-center justify-center shrink-0">
-                                <span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings: 'FILL' 1;">{{ $recType['icon'] }}</span>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h3 class="font-body-lg text-body-lg font-semibold text-on-secondary-container leading-tight">{{ $rec->name }}</h3>
-                                <p class="font-body-sm text-body-sm text-on-secondary-container/70 mt-0.5">
-                                    {{ $catLabel }}{{ $rec->duration ? ' · ' . $rec->duration : '' }}{{ $rec->level ? ' · ' . $rec->level : '' }}
-                                </p>
-                                <div class="flex gap-2 mt-1.5">
-                                    <x-badge :icon="$recType['icon']" :text="$recType['label']" :variant="$recType['variant']" />
-                                </div>
-                            </div>
-                            <span class="material-symbols-outlined text-on-secondary-container/50 shrink-0 mt-2">chevron_right</span>
-                        </div>
-                    </a>
-                    <a href="{{ route('academy') }}" wire:navigate
-                        class="inline-flex items-center gap-1 mt-3 text-label-caps font-label-caps text-on-secondary-container/70 hover:text-on-secondary-container transition-colors">
-                        Lihat Semua Academy
-                        <span class="material-symbols-outlined text-[16px]">arrow_forward_ios</span>
-                    </a>
                 </div>
-                <div class="absolute -right-6 -top-6 opacity-10 pointer-events-none">
-                    <span class="material-symbols-outlined text-[120px] text-primary" style="font-variation-settings: 'FILL' 1;">school</span>
+                <div class="absolute -right-4 -top-4 opacity-[0.06] pointer-events-none">
+                    <span class="material-symbols-outlined text-[72px] text-primary" style="font-variation-settings: 'FILL' 1;">school</span>
                 </div>
-            </section>
+            </a>
         @endif
     @endauth
 
