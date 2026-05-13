@@ -12,7 +12,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production Runtime
-FROM php:8.3-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 # Install system dependencies and PHP extensions
 RUN apk add --no-cache \
@@ -26,6 +26,8 @@ RUN apk add --no-cache \
     sqlite \
     sqlite-dev \
     supervisor \
+    oniguruma-dev \
+    icu-dev \
     && docker-php-ext-install \
     pdo_sqlite \
     mbstring \
@@ -78,16 +80,8 @@ RUN chown -R www:www /var/www/html \
     && chmod -R 775 /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/database
 
-# Change to non-root user
-USER www
-
 # Expose port 9000
 EXPOSE 9000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD php artisan health:check || exit 1
-
-# Entrypoint
+# Entrypoint (runs as root to set permissions, then switches to www user)
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["php-fpm"]

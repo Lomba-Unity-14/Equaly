@@ -3,10 +3,10 @@ set -e
 
 echo "Running production setup..."
 
-# Set proper permissions
-sudo chown -R www:www /var/www/html/storage
-sudo chown -R www:www /var/www/html/bootstrap/cache
-sudo chown -R www:www /var/www/html/database
+# Set proper permissions (run as root)
+chown -R www:www /var/www/html/storage
+chown -R www:www /var/www/html/bootstrap/cache
+chown -R www:www /var/www/html/database
 
 # Generate application key if not exists
 if [ -z "$APP_KEY" ]; then
@@ -35,9 +35,10 @@ php artisan config:cache --ansi
 php artisan route:cache --ansi
 php artisan view:cache --ansi
 
-# Start supervisor (queue worker)
+# Start supervisor (queue worker) as background process
 echo "Starting queue worker..."
 supervisord -c /etc/supervisor/conf.d/supervisord.conf
 
-# Execute the main command
-exec "$@"
+# Switch to www user for running php-fpm
+echo "Starting php-fpm..."
+exec su -s /bin/sh www -c "php-fpm"
