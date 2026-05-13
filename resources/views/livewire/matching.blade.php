@@ -14,7 +14,7 @@
         @php
             $progressMessages = [
                 'Mencari database lowongan terbaru...',
-                'Menganalisis profil dan skill kamu...',
+                'AI sedang melakukan analisis profil dan skill kamu...',
                 'Mencocokkan kesesuaian pekerjaan...',
                 'Menilai aksesibilitas lingkungan kerja...',
                 'Menyusun hasil rekomendasi terbaik...',

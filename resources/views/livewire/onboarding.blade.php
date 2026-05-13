@@ -367,8 +367,155 @@
         </section>
     @endif
 
-    {{-- Step 7: Review --}}
+    {{-- Step 7: Pengalaman Kerja --}}
     @if ($step === 7)
+        <section class="flex flex-col gap-3">
+            <div class="flex flex-col">
+                <h2 class="text-h2 font-h2 text-on-surface">Pengalaman Kerja</h2>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Ceritakan pengalaman kerja kamu agar rekomendasi semakin akurat.</p>
+            </div>
+
+            <button type="button" wire:click="$toggle('no_work_experience')"
+                class="w-full text-left p-4 rounded-2xl border-2 transition-all duration-200 flex items-center gap-3 cursor-pointer
+                    {{ $no_work_experience ? 'border-primary bg-primary-container/30' : 'border-border-subtle bg-surface hover:border-primary/50' }}">
+                <span class="material-symbols-outlined text-[22px] shrink-0
+                    {{ $no_work_experience ? 'text-primary' : 'text-secondary' }}"
+                    style="font-variation-settings: 'FILL' {{ $no_work_experience ? 1 : 0 }};">
+                    {{ $no_work_experience ? 'check_box' : 'check_box_outline_blank' }}
+                </span>
+                <span class="font-body-lg text-body-lg text-on-surface">Saya belum memiliki pengalaman kerja</span>
+            </button>
+
+            @if (!$no_work_experience)
+                <div class="space-y-3">
+                    @foreach ($work_experiences as $index => $exp)
+                        <div class="bg-surface rounded-2xl border border-outline-variant shadow-sm p-5 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="font-label-caps text-label-caps text-primary font-semibold tracking-wider">Pengalaman {{ $index + 1 }}</span>
+                                <button type="button" wire:click="removeWorkExperience({{ $index }})"
+                                    class="text-error hover:text-error/80 flex items-center gap-1 text-label-caps cursor-pointer">
+                                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                                    Hapus
+                                </button>
+                            </div>
+
+                            <div class="flex flex-col gap-4">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="font-body-sm text-body-sm font-semibold text-on-surface">Nama Perusahaan</label>
+                                        <input type="text" wire:model="work_experiences.{{ $index }}.company_name"
+                                            placeholder="Contoh: PT Maju Jaya"
+                                            class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface text-on-surface font-body-lg text-body-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                                        @error("work_experiences.{$index}.company_name")
+                                            <p class="font-body-sm text-body-sm text-error">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="font-body-sm text-body-sm font-semibold text-on-surface">Posisi / Jabatan</label>
+                                        <input type="text" wire:model="work_experiences.{{ $index }}.position"
+                                            placeholder="Contoh: Web Developer"
+                                            class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface text-on-surface font-body-lg text-body-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                                        @error("work_experiences.{$index}.position")
+                                            <p class="font-body-sm text-body-sm text-error">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="font-body-sm text-body-sm font-semibold text-on-surface">Bulan Masuk</label>
+                                        <select wire:model="work_experiences.{{ $index }}.start_month"
+                                            class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface text-on-surface font-body-lg text-body-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                                            <option value="">-- Pilih Bulan --</option>
+                                            @foreach ($this->monthRange as $value => $label)
+                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error("work_experiences.{$index}.start_month")
+                                            <p class="font-body-sm text-body-sm text-error">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="font-body-sm text-body-sm font-semibold text-on-surface">Tahun Masuk</label>
+                                        <select wire:model="work_experiences.{{ $index }}.start_year"
+                                            class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface text-on-surface font-body-lg text-body-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                                            <option value="">-- Pilih Tahun --</option>
+                                            @foreach ($this->yearRange as $year => $label)
+                                                <option value="{{ $year }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error("work_experiences.{$index}.start_year")
+                                            <p class="font-body-sm text-body-sm text-error">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3">
+                                    <button type="button" wire:click="$set('work_experiences.{{ $index }}.still_working', {{ !($exp['still_working'] ?? false) ? 'true' : 'false' }})"
+                                        class="flex items-center gap-2 cursor-pointer">
+                                        <span class="material-symbols-outlined text-[22px] shrink-0
+                                            {{ ($exp['still_working'] ?? false) ? 'text-primary' : 'text-secondary' }}"
+                                            style="font-variation-settings: 'FILL' {{ ($exp['still_working'] ?? false) ? 1 : 0 }};">
+                                            {{ ($exp['still_working'] ?? false) ? 'check_box' : 'check_box_outline_blank' }}
+                                        </span>
+                                        <span class="font-body-sm text-body-sm text-on-surface">Masih bekerja sampai saat ini</span>
+                                    </button>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="font-body-sm text-body-sm font-semibold {{ ($exp['still_working'] ?? false) ? 'text-outline' : 'text-on-surface' }}">Bulan Keluar</label>
+                                        <select wire:model="work_experiences.{{ $index }}.end_month"
+                                            @if($exp['still_working'] ?? false) disabled @endif
+                                            class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface font-body-lg text-body-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all
+                                                {{ ($exp['still_working'] ?? false) ? 'text-outline bg-surface-container-low cursor-not-allowed opacity-50' : 'text-on-surface' }}">
+                                            <option value="">-- Pilih Bulan --</option>
+                                            @foreach ($this->monthRange as $value => $label)
+                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label class="font-body-sm text-body-sm font-semibold {{ ($exp['still_working'] ?? false) ? 'text-outline' : 'text-on-surface' }}">Tahun Keluar</label>
+                                        <select wire:model="work_experiences.{{ $index }}.end_year"
+                                            @if($exp['still_working'] ?? false) disabled @endif
+                                            class="w-full px-4 py-3 rounded-xl border border-border-subtle bg-surface font-body-lg text-body-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all
+                                                {{ ($exp['still_working'] ?? false) ? 'text-outline bg-surface-container-low cursor-not-allowed opacity-50' : 'text-on-surface' }}">
+                                            <option value="">-- Pilih Tahun --</option>
+                                            @foreach ($this->yearRange as $year => $label)
+                                                <option value="{{ $year }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                @error("work_experiences.{$index}.end_month")
+                                    <p class="font-body-sm text-body-sm text-error">{{ $message }}</p>
+                                @enderror
+                                @error("work_experiences.{$index}.end_year")
+                                    <p class="font-body-sm text-body-sm text-error">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    @endforeach
+
+                    @if (count($work_experiences) < 10)
+                        <button type="button" wire:click="addWorkExperience"
+                            class="w-full py-4 rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant font-body-lg text-body-lg font-semibold flex items-center justify-center gap-2 hover:border-primary/50 hover:text-primary hover:bg-primary-container/10 transition-all cursor-pointer">
+                            <span class="material-symbols-outlined text-xl">add</span>
+                            Tambah Pengalaman Kerja
+                        </button>
+                    @endif
+                </div>
+
+                @error('work_experiences')
+                    <p class="font-body-sm text-body-sm text-error">{{ $message }}</p>
+                @enderror
+            @endif
+        </section>
+    @endif
+
+    {{-- Step 8: Review --}}
+    @if ($step === 8)
         <section class="flex flex-col gap-3">
             <div class="flex flex-col">
                 <h2 class="text-h2 font-h2 text-on-surface">Konfirmasi Data</h2>
@@ -471,6 +618,37 @@
                                 </div>
                             @endforeach
                         </div>
+                    </div>
+                </div>
+
+                <hr class="border-border-subtle">
+
+                {{-- Section: Pengalaman Kerja --}}
+                <div class="p-5 space-y-4">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-xl">work</span>
+                        <span class="font-label-caps text-label-caps text-primary font-semibold tracking-wider">PENGALAMAN KERJA</span>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="font-label-caps text-label-caps text-outline">Riwayat Pekerjaan</span>
+                        @if ($no_work_experience)
+                            <span class="font-body-lg text-body-lg text-on-surface font-medium mt-0.5">Belum ada pengalaman kerja</span>
+                        @elseif (!empty($work_experiences))
+                            <div class="flex flex-col gap-2 mt-1">
+                                @foreach ($work_experiences as $exp)
+                                    <div class="flex items-start gap-3 bg-surface-container-low rounded-xl p-3 border border-border-subtle">
+                                        <span class="material-symbols-outlined text-secondary text-xl mt-0.5 shrink-0">business_center</span>
+                                        <div>
+                                            <span class="font-body-sm text-body-sm font-semibold text-on-surface block">{{ $exp['position'] }}</span>
+                                            <span class="font-label-caps text-label-caps text-secondary">{{ $exp['company_name'] }}</span>
+                                            <span class="font-label-caps text-label-caps text-outline block mt-0.5">
+                                                {{ \App\Data\OnboardingData::MONTHS[$exp['start_month']] ?? '' }} {{ $exp['start_year'] }} – {{ ($exp['still_working'] ?? false) ? 'Sekarang' : (\App\Data\OnboardingData::MONTHS[$exp['end_month']] ?? '').' '.$exp['end_year'] }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

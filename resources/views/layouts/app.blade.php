@@ -21,13 +21,8 @@
 <body class="bg-linear-to-br from-bg-main to-surface-container-low min-h-screen text-text-primary font-body-lg">
     <div class="max-w-container-max mx-auto min-h-screen relative pb-20">
 
-        <header class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 h-16 max-w-md mx-auto bg-surface/80 backdrop-blur-md dark:bg-gray-900 border-b border-border-subtle shadow-sm transition-colors duration-200">
-            <div class="w-12"></div>
+        <header class="fixed top-0 left-0 right-0 z-50 flex justify-center items-center px-4 h-16 max-w-md mx-auto bg-surface/80 backdrop-blur-md dark:bg-gray-900 border-b border-border-subtle shadow-sm transition-colors duration-200">
             <span class="font-h1 text-h1 text-text-primary tracking-tight">Equaly</span>
-            <button
-                class="w-[48px] h-[48px] flex items-center justify-center text-primary hover:bg-surface-container-low transition-colors duration-200 rounded-full">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
-            </button>
         </header>
 
         <main class="pt-22 px-gutter flex flex-col">

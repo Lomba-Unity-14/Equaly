@@ -13,7 +13,7 @@ class Onboarding extends Component
 {
     public int $step = 1;
 
-    public const TOTAL_STEPS = 7;
+    public const TOTAL_STEPS = 8;
 
     public string $disability_condition = 'tunarungu';
 
@@ -37,6 +37,10 @@ class Onboarding extends Component
 
     public array $preferred_locations = [];
 
+    public bool $no_work_experience = false;
+
+    public array $work_experiences = [];
+
     public function mount(): void
     {
         $existing = auth()->user()->profile;
@@ -50,6 +54,21 @@ class Onboarding extends Component
             $this->job_types = $existing->job_types ?? [];
             $this->preferred_locations = $existing->preferred_locations ?? [];
             $this->date_of_birth = auth()->user()->date_of_birth?->format('Y-m-d');
+
+            $existingExperiences = auth()->user()->workExperiences;
+            if ($existingExperiences->isNotEmpty()) {
+                $this->work_experiences = $existingExperiences->map(fn ($e) => [
+                    'company_name' => $e->company_name,
+                    'position' => $e->position,
+                    'start_month' => $e->start_date ? $e->start_date->format('m') : '',
+                    'start_year' => $e->start_date ? $e->start_date->format('Y') : '',
+                    'still_working' => $e->end_date === null,
+                    'end_month' => $e->end_date ? $e->end_date->format('m') : '',
+                    'end_year' => $e->end_date ? $e->end_date->format('Y') : '',
+                ])->toArray();
+            } else {
+                $this->no_work_experience = true;
+            }
 
             $existingSkills = $existing->skill_categories ?? [];
             if ($existingSkills) {
@@ -98,6 +117,40 @@ class Onboarding extends Component
         }
     }
 
+    public function addWorkExperience(): void
+    {
+        $this->work_experiences[] = [
+            'company_name' => '',
+            'position' => '',
+            'start_month' => '',
+            'start_year' => '',
+            'still_working' => false,
+            'end_month' => '',
+            'end_year' => '',
+        ];
+    }
+
+    public function removeWorkExperience(int $index): void
+    {
+        unset($this->work_experiences[$index]);
+        $this->work_experiences = array_values($this->work_experiences);
+    }
+
+    public function getYearRangeProperty(): array
+    {
+        $years = [];
+        for ($y = (int) date('Y'); $y >= 1980; $y--) {
+            $years[$y] = (string) $y;
+        }
+
+        return $years;
+    }
+
+    public function getMonthRangeProperty(): array
+    {
+        return OnboardingData::MONTHS;
+    }
+
     public function save(): void
     {
         $this->validateCurrentStep();
@@ -131,10 +184,29 @@ class Onboarding extends Component
             auth()->user()->update(['date_of_birth' => $this->date_of_birth]);
         }
 
+        auth()->user()->workExperiences()->delete();
+        if (! $this->no_work_experience && ! empty($this->work_experiences)) {
+            foreach ($this->work_experiences as $exp) {
+                $startDate = ($exp['start_year'] && $exp['start_month'])
+                    ? "{$exp['start_year']}-{$exp['start_month']}-01"
+                    : null;
+                $endDate = null;
+                if (! ($exp['still_working'] ?? false) && $exp['end_year'] && $exp['end_month']) {
+                    $endDate = "{$exp['end_year']}-{$exp['end_month']}-01";
+                }
+                auth()->user()->workExperiences()->create([
+                    'company_name' => $exp['company_name'],
+                    'position' => $exp['position'],
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                ]);
+            }
+        }
+
         Cache::put('matching_status_'.auth()->id(), 'processing', now()->addMinutes(10));
         (new MatchUserToJobs(auth()->id()))->handle();
 
-        session()->flash('success', 'Profil berhasil dilengkapi! AI sedang menganalisa profilmu...');
+        session()->flash('success', 'Profil berhasil disimpan! AI sedang melakukan analisis, kami perlu waktu untuk mencocokkan profil kamu, mohon menunggu ya...');
         $this->redirect(route('beranda'), navigate: true);
     }
 
@@ -183,7 +255,19 @@ class Onboarding extends Component
                 'job_types' => 'required|array|min:1',
                 'preferred_locations' => 'required|array|min:1',
             ],
-            7 => [],
+            7 => $this->no_work_experience
+                ? []
+                : [
+                    'work_experiences' => 'required|array|min:1|max:10',
+                    'work_experiences.*.company_name' => 'required|string|max:255',
+                    'work_experiences.*.position' => 'required|string|max:255',
+                    'work_experiences.*.start_month' => 'required|string|in:01,02,03,04,05,06,07,08,09,10,11,12',
+                    'work_experiences.*.start_year' => 'required|integer|min:1980|max:'.((int) date('Y') + 1),
+                    'work_experiences.*.still_working' => 'boolean',
+                    'work_experiences.*.end_month' => 'nullable|string|in:01,02,03,04,05,06,07,08,09,10,11,12',
+                    'work_experiences.*.end_year' => 'nullable|integer|min:1980|max:'.((int) date('Y') + 1),
+                ],
+            8 => [],
             default => [],
         };
 

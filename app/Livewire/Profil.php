@@ -43,6 +43,10 @@ class Profil extends Component
 
     public array $preferred_locations = [];
 
+    public bool $no_work_experience = false;
+
+    public array $work_experiences = [];
+
     public bool $needsRematch = false;
 
     public function mount(): void
@@ -58,6 +62,21 @@ class Profil extends Component
             $this->education_major = $this->profile->education_major ?? '';
             $this->job_types = $this->profile->job_types ?? [];
             $this->preferred_locations = $this->profile->preferred_locations ?? [];
+
+            $existingExperiences = $this->user->workExperiences;
+            if ($existingExperiences->isNotEmpty()) {
+                $this->work_experiences = $existingExperiences->map(fn ($e) => [
+                    'company_name' => $e->company_name,
+                    'position' => $e->position,
+                    'start_month' => $e->start_date ? $e->start_date->format('m') : '',
+                    'start_year' => $e->start_date ? $e->start_date->format('Y') : '',
+                    'still_working' => $e->end_date === null,
+                    'end_month' => $e->end_date ? $e->end_date->format('m') : '',
+                    'end_year' => $e->end_date ? $e->end_date->format('Y') : '',
+                ])->toArray();
+            } else {
+                $this->no_work_experience = true;
+            }
 
             $existingSkills = $this->profile->skill_categories ?? [];
             if ($existingSkills) {
@@ -95,6 +114,23 @@ class Profil extends Component
             $this->skill_categories = [];
             $this->sub_skills = [];
 
+            $existingExperiences = $this->user->workExperiences;
+            if ($existingExperiences->isNotEmpty()) {
+                $this->work_experiences = $existingExperiences->map(fn ($e) => [
+                    'company_name' => $e->company_name,
+                    'position' => $e->position,
+                    'start_month' => $e->start_date ? $e->start_date->format('m') : '',
+                    'start_year' => $e->start_date ? $e->start_date->format('Y') : '',
+                    'still_working' => $e->end_date === null,
+                    'end_month' => $e->end_date ? $e->end_date->format('m') : '',
+                    'end_year' => $e->end_date ? $e->end_date->format('Y') : '',
+                ])->toArray();
+                $this->no_work_experience = false;
+            } else {
+                $this->work_experiences = [];
+                $this->no_work_experience = true;
+            }
+
             $existingSkills = $this->profile->skill_categories ?? [];
             if ($existingSkills) {
                 if (isset($existingSkills[0]) && is_array($existingSkills[0])) {
@@ -129,6 +165,40 @@ class Profil extends Component
         } else {
             $this->skill_categories[] = $category;
         }
+    }
+
+    public function addWorkExperience(): void
+    {
+        $this->work_experiences[] = [
+            'company_name' => '',
+            'position' => '',
+            'start_month' => '',
+            'start_year' => '',
+            'still_working' => false,
+            'end_month' => '',
+            'end_year' => '',
+        ];
+    }
+
+    public function removeWorkExperience(int $index): void
+    {
+        unset($this->work_experiences[$index]);
+        $this->work_experiences = array_values($this->work_experiences);
+    }
+
+    public function getYearRangeProperty(): array
+    {
+        $years = [];
+        for ($y = (int) date('Y'); $y >= 1980; $y--) {
+            $years[$y] = (string) $y;
+        }
+
+        return $years;
+    }
+
+    public function getMonthRangeProperty(): array
+    {
+        return OnboardingData::MONTHS;
     }
 
     public function saveSection(string $section): void
@@ -177,6 +247,28 @@ class Profil extends Component
                 }
 
                 return ['skill_categories' => $skillCategoriesData];
+            },
+            'work_experience' => function () {
+                auth()->user()->workExperiences()->delete();
+                if (! $this->no_work_experience && ! empty($this->work_experiences)) {
+                    foreach ($this->work_experiences as $exp) {
+                        $startDate = ($exp['start_year'] && $exp['start_month'])
+                            ? "{$exp['start_year']}-{$exp['start_month']}-01"
+                            : null;
+                        $endDate = null;
+                        if (! ($exp['still_working'] ?? false) && $exp['end_year'] && $exp['end_month']) {
+                            $endDate = "{$exp['end_year']}-{$exp['end_month']}-01";
+                        }
+                        auth()->user()->workExperiences()->create([
+                            'company_name' => $exp['company_name'],
+                            'position' => $exp['position'],
+                            'start_date' => $startDate,
+                            'end_date' => $endDate,
+                        ]);
+                    }
+                }
+
+                return [];
             },
             default => [],
         };
@@ -248,6 +340,23 @@ class Profil extends Component
             $this->skill_categories = [];
             $this->sub_skills = [];
 
+            $existingExperiences = $this->user->workExperiences;
+            if ($existingExperiences->isNotEmpty()) {
+                $this->work_experiences = $existingExperiences->map(fn ($e) => [
+                    'company_name' => $e->company_name,
+                    'position' => $e->position,
+                    'start_month' => $e->start_date ? $e->start_date->format('m') : '',
+                    'start_year' => $e->start_date ? $e->start_date->format('Y') : '',
+                    'still_working' => $e->end_date === null,
+                    'end_month' => $e->end_date ? $e->end_date->format('m') : '',
+                    'end_year' => $e->end_date ? $e->end_date->format('Y') : '',
+                ])->toArray();
+                $this->no_work_experience = false;
+            } else {
+                $this->work_experiences = [];
+                $this->no_work_experience = true;
+            }
+
             $existingSkills = $this->profile->skill_categories ?? [];
             if ($existingSkills) {
                 if (isset($existingSkills[0]) && is_array($existingSkills[0])) {
@@ -274,7 +383,7 @@ class Profil extends Component
     {
         Cache::put('matching_status_'.auth()->id(), 'processing', now()->addMinutes(10));
         (new MatchUserToJobs(auth()->id()))->handle();
-        session()->flash('success', 'AI akan mencocokkan ulang dengan data terbaru...');
+        session()->flash('success', 'Profil berhasil disimpan! AI sedang melakukan analisis, kami perlu waktu untuk mencocokkan profil kamu, mohon menunggu ya...');
         $this->redirect(route('beranda'), navigate: true);
     }
 

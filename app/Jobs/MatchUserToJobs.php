@@ -61,6 +61,12 @@ class MatchUserToJobs
                 'job_types' => $profile->job_types ?? [],
                 'preferred_locations' => $profile->preferred_locations ?? [],
                 'age' => $dateOfBirth ? $dateOfBirth->age : null,
+                'work_experiences' => $user->workExperiences->map(fn ($e) => [
+                    'company_name' => $e->company_name,
+                    'position' => $e->position,
+                    'start_date' => $e->start_date?->format('Y-m-d'),
+                    'end_date' => $e->end_date?->format('Y-m-d'),
+                ])->toArray(),
             ];
 
             $jobs = JobVacancyData::all();
@@ -143,6 +149,20 @@ class MatchUserToJobs
         }
         $userSkills = array_unique($userSkills);
 
+        $workExpKeywords = [];
+        foreach ($userProfile['work_experiences'] ?? [] as $exp) {
+            foreach (['position', 'company_name'] as $field) {
+                $words = explode(' ', strtolower($exp[$field] ?? ''));
+                foreach ($words as $word) {
+                    $word = trim($word);
+                    if (strlen($word) >= 3) {
+                        $workExpKeywords[] = $word;
+                    }
+                }
+            }
+        }
+        $workExpKeywords = array_unique($workExpKeywords);
+
         $preferredLocations = $userProfile['preferred_locations'] ?? [];
         $locationLabels = [];
         foreach ($preferredLocations as $loc) {
@@ -157,7 +177,7 @@ class MatchUserToJobs
             }
         }
 
-        $filtered = $jobs->filter(function ($job) use ($preferredEnvs, $userSkills, $locationLabels, $jobTypeLabels, $userProfile) {
+        $filtered = $jobs->filter(function ($job) use ($preferredEnvs, $userSkills, $locationLabels, $jobTypeLabels, $workExpKeywords, $userProfile) {
             if (! $this->passesEducationFilter($userProfile['education_level'] ?? '', $job->education_req)) {
                 return false;
             }
@@ -175,13 +195,25 @@ class MatchUserToJobs
             }
 
             $skillMatch = false;
-            if (empty($userSkills) || empty($job->skill_req)) {
+            $reqLower = strtolower($job->skill_req ?? '');
+            $jobCategoryLower = strtolower($job->category ?? '');
+            $jobTitleLower = strtolower($job->job_title ?? '');
+            if (empty($userSkills) || (empty($job->skill_req) && empty($job->category))) {
                 $skillMatch = empty($userSkills);
             } else {
-                $reqLower = strtolower($job->skill_req);
                 foreach ($userSkills as $skill) {
-                    if (str_contains($reqLower, $skill)) {
+                    if (str_contains($reqLower, $skill) || str_contains($jobCategoryLower, $skill) || str_contains($jobTitleLower, $skill)) {
                         $skillMatch = true;
+                        break;
+                    }
+                }
+            }
+
+            $expMatch = false;
+            if (! empty($workExpKeywords)) {
+                foreach ($workExpKeywords as $kw) {
+                    if (str_contains($reqLower, $kw) || str_contains($jobCategoryLower, $kw) || str_contains($jobTitleLower, $kw)) {
+                        $expMatch = true;
                         break;
                     }
                 }
@@ -213,7 +245,7 @@ class MatchUserToJobs
                 }
             }
 
-            return $workMatch || $skillMatch || $locationMatch || $employmentMatch;
+            return $workMatch || $skillMatch || $locationMatch || $employmentMatch || $expMatch;
         });
 
         return $filtered->values()->toArray();

@@ -197,22 +197,89 @@ class OnboardingData
         'tunarungu' => 'Tunarungu (Tuli/Deaf)',
     ];
 
-    public const MATCH_TIERS = [
-        ['min' => 80, 'label' => 'Sangat Disarankan', 'desc' => 'Profil anda adalah prioritas utama perusahaan ini', 'icon' => 'check_circle', 'variant' => 'high'],
-        ['min' => 60, 'label' => 'Disarankan', 'desc' => 'Cukup namun perlu penguatan di beberapa skill spesifik', 'icon' => 'info', 'variant' => 'medium'],
-        ['min' => 40, 'label' => 'Dipertimbangkan', 'desc' => 'Masih ada gap yang besar, disarankan mengikuti training/academy terlebih dahulu', 'icon' => 'warning', 'variant' => 'medium'],
-        ['min' => 0, 'label' => 'Belum Disarankan', 'desc' => '', 'icon' => 'warning', 'variant' => 'low'],
+    public const MONTHS = [
+        '01' => 'Januari', '02' => 'Februari', '03' => 'Maret',
+        '04' => 'April', '05' => 'Mei', '06' => 'Juni',
+        '07' => 'Juli', '08' => 'Agustus', '09' => 'September',
+        '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
     ];
 
-    public static function matchTier(int $score): array
+    public const MATCH_TIERS = [
+        [
+            'min' => 80,
+            'label' => 'Sangat Disarankan',
+            'descs' => [
+                'Kamu berpotensi sesuai dengan lowongan ini',
+                'Profil kamu dapat meningkatkan peluang di posisi ini',
+                'Skill dan preferensimu selaras dengan kebutuhan lowongan',
+            ],
+            'icon' => 'check_circle',
+            'variant' => 'high',
+        ],
+        [
+            'min' => 60,
+            'label' => 'Disarankan',
+            'descs' => [
+                'Cukup sesuai, pertimbangkan mengasah skill terkait',
+                'Peluangmu cukup baik, beberapa skill bisa diperkuat',
+                'Profil kamu cukup cocok, tingkatkan di beberapa area',
+            ],
+            'icon' => 'info',
+            'variant' => 'medium',
+        ],
+        [
+            'min' => 40,
+            'label' => 'Dipertimbangkan',
+            'descs' => [
+                'Masih ada gap, disarankan ikut pelatihan terlebih dahulu',
+                'Kamu punya dasar, tapi perlu mengembangkan skill lebih lanjut',
+                'Kesenjangan skill cukup terasa, academy dapat membantu',
+            ],
+            'icon' => 'warning',
+            'variant' => 'medium',
+        ],
+        [
+            'min' => 0,
+            'label' => 'Belum Disarankan',
+            'descs' => [
+                'Profil kamu belum sesuai dengan lowongan ini',
+                'Coba jelajahi lowongan yang lebih sesuai keahlianmu',
+                'Kesenjangan cukup besar, lihat rekomendasi pelatihan',
+            ],
+            'icon' => 'warning',
+            'variant' => 'low',
+        ],
+    ];
+
+    public static function matchTier(int $score, ?int $seed = null): array
     {
         foreach (self::MATCH_TIERS as $tier) {
             if ($score >= $tier['min']) {
+                $tier['desc'] = self::pickTierDesc($tier, $seed);
+
                 return $tier;
             }
         }
 
-        return self::MATCH_TIERS[3];
+        $fallback = self::MATCH_TIERS[3];
+        $fallback['desc'] = self::pickTierDesc($fallback, $seed);
+
+        return $fallback;
+    }
+
+    protected static function pickTierDesc(array $tier, ?int $seed): string
+    {
+        $descs = $tier['descs'] ?? [];
+
+        if (empty($descs)) {
+            return '';
+        }
+
+        if ($seed !== null) {
+            return $descs[$seed % count($descs)];
+        }
+
+        return $descs[array_rand($descs)];
     }
 
     public static function getMajorsForCategories(array $categories, bool $isSmk = false): array
@@ -247,5 +314,58 @@ class OnboardingData
         }
 
         return $result;
+    }
+
+    public static function getDisabilityTrivia(?object $companyAgg, ?string $jobDetail): array
+    {
+        if ($companyAgg && $companyAgg->total > 0) {
+            $pct = round(($companyAgg->friendly / $companyAgg->total) * 100);
+
+            if ($pct < 50) {
+                return [
+                    'text' => 'Lowongan ini kurang ramah disabilitas',
+                    'icon' => 'sentiment_dissatisfied',
+                    'variant' => 'bad',
+                ];
+            }
+
+            return [
+                'text' => 'Lowongan ini disability friendly!',
+                'icon' => 'diversity_3',
+                'variant' => 'good',
+            ];
+        }
+
+        if (self::jobDetailMentionsDisability($jobDetail)) {
+            return [
+                'text' => 'Lowongan ini menerima disabilitas',
+                'icon' => 'info',
+                'variant' => 'neutral',
+            ];
+        }
+
+        return [
+            'text' => 'Belum ada informasi menerima disabilitas',
+            'icon' => 'help_outline',
+            'variant' => 'noinfo',
+        ];
+    }
+
+    protected static function jobDetailMentionsDisability(?string $jobDetail): bool
+    {
+        if (empty($jobDetail)) {
+            return false;
+        }
+
+        $keywords = ['disabilitas', 'disability', 'tunarungu', 'tuli', 'deaf', 'difabel', 'inklusif', 'inklusi', 'penyandang'];
+        $lower = strtolower($jobDetail);
+
+        foreach ($keywords as $kw) {
+            if (str_contains($lower, $kw)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
