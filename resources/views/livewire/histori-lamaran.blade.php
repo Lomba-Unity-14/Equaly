@@ -108,8 +108,8 @@
             <div class="bg-surface rounded-2xl border border-border-subtle shadow-sm p-4">
                 <div class="flex items-start gap-3 mb-3">
                     <div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0 overflow-hidden">
-                        @if($job && $job->image_logo_url)
-                            <img src="{{ $job->image_logo_url }}" alt="{{ $app->company_name }}" class="w-full h-full object-cover">
+                        @if($job && $job->company_logo_url)
+                            <img src="{{ $job->company_logo_url }}" alt="{{ $app->company_name }}" class="w-full h-full object-cover">
                         @else
                             <span class="material-symbols-outlined text-secondary">domain</span>
                         @endif

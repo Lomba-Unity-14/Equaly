@@ -7,18 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'url',
+    'job_url',
     'company',
     'location',
     'job_title',
-    'jobdesk',
+    'job_detail',
     'salary',
-    'job_category',
+    'category',
     'skill_req',
     'education_req',
     'work_type',
+    'employment_type',
     'company_size',
-    'image_logo_url',
+    'company_logo_url',
 ])]
 class JobVacancyData extends Model
 {

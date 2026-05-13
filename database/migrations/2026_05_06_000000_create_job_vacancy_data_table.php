@@ -10,18 +10,19 @@ return new class extends Migration
     {
         Schema::create('job_vacancy_data', function (Blueprint $table) {
             $table->id();
-            $table->text('url')->nullable();
+            $table->text('job_url')->nullable();
             $table->string('company')->nullable();
             $table->string('location')->nullable();
             $table->string('job_title')->nullable();
-            $table->longText('jobdesk')->nullable();
+            $table->longText('job_detail')->nullable();
             $table->string('salary')->nullable();
-            $table->string('job_category')->nullable();
+            $table->string('category')->nullable();
             $table->string('skill_req')->nullable();
             $table->string('education_req')->nullable();
             $table->string('work_type')->nullable();
+            $table->string('employment_type')->nullable();
             $table->string('company_size')->nullable();
-            $table->text('image_logo_url')->nullable();
+            $table->text('company_logo_url')->nullable();
             $table->timestamps();
         });
     }

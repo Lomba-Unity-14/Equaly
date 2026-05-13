@@ -21,6 +21,37 @@
         </button>
     </div>
 
+
+    {{-- Company Reviews --}}
+    <a href="{{ route('histori.lamaran') }}" wire:navigate class="block space-y-stack-sm">
+        <div class="flex items-center justify-between px-1">
+            <h3 class="font-h2 text-h2 text-on-surface">Histori Lamaran</h3>
+            @if($pendingCount > 0)
+                <span class="bg-secondary-container text-on-secondary-container font-label-caps text-label-caps px-3 py-1 rounded-full">{{ $pendingCount }} tertunda</span>
+            @endif
+        </div>
+        <div class="bg-surface rounded-2xl border border-border-subtle shadow-sm p-4 space-y-4">
+            @if($latestApplication)
+                @php $job = $latestApplication->jobVacancyData; @endphp
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center shrink-0 overflow-hidden border border-border-subtle">
+                        @if($job && $job->company_logo_url)
+                            <img src="{{ $job->company_logo_url }}" alt="{{ $latestApplication->company_name }}" class="w-full h-full object-cover">
+                        @else
+                            <span class="material-symbols-outlined text-secondary">domain</span>
+                        @endif
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-body-lg text-body-lg font-semibold text-on-surface">{{ $job->job_title ?? 'Lowongan' }}</h4>
+                        <p class="font-body-sm text-body-sm text-text-secondary">{{ $latestApplication->company_name ?? 'Perusahaan' }}</p>
+                        <p class="font-label-caps text-label-caps text-outline mt-1">{{ $latestApplication->applied_at?->diffForHumans() ?? '-' }}</p>
+                    </div>
+                </div>
+                @if($latestApplication->review)
+                    <div class="bg-primary-container/20 rounded-xl p-3 flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary shrink-0" style="font-variation-settings: 'FILL' 1;">verified</span>
+                        <p class="font-body-sm text-body-sm text-on-primary-container">Ulasan telah diberikan &middot; {{ $latestApplication->review->is_friendly ? 'Ramah disabilitas' : 'Kurang ramah' }}</p>
+
     {{-- Tab: Profil --}}
     <div x-show="tab === 'profil'" x-transition class="flex flex-col gap-stack-lg pb-6">
         <section class="flex flex-col items-center bg-surface p-6 rounded-2xl shadow-sm border border-outline-variant text-center">

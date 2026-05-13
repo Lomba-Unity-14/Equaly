@@ -149,7 +149,15 @@ class MatchUserToJobs
             $locationLabels[] = OnboardingData::LOCATIONS[$loc] ?? $loc;
         }
 
-        $filtered = $jobs->filter(function ($job) use ($preferredEnvs, $userSkills, $locationLabels, $userProfile) {
+        $jobTypeLabels = [];
+        foreach ($userProfile['job_types'] ?? [] as $jt) {
+            $label = OnboardingData::JOB_TYPES[$jt] ?? null;
+            if ($label) {
+                $jobTypeLabels[] = $label;
+            }
+        }
+
+        $filtered = $jobs->filter(function ($job) use ($preferredEnvs, $userSkills, $locationLabels, $jobTypeLabels, $userProfile) {
             if (! $this->passesEducationFilter($userProfile['education_level'] ?? '', $job->education_req)) {
                 return false;
             }
@@ -184,14 +192,28 @@ class MatchUserToJobs
                 $locationMatch = true;
             } else {
                 foreach ($locationLabels as $loc) {
-                    if (! empty($job->location) && stripos($job->location, $loc) !== false) {
-                        $locationMatch = true;
+                    if (! empty($job->location)) {
+                        if (stripos($job->location, $loc) !== false || stripos($loc, $job->location) !== false) {
+                            $locationMatch = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            $employmentMatch = false;
+            if (empty($jobTypeLabels)) {
+                $employmentMatch = true;
+            } else {
+                foreach ($jobTypeLabels as $label) {
+                    if (! empty($job->employment_type) && stripos($job->employment_type, $label) !== false) {
+                        $employmentMatch = true;
                         break;
                     }
                 }
             }
 
-            return $workMatch || $skillMatch || $locationMatch;
+            return $workMatch || $skillMatch || $locationMatch || $employmentMatch;
         });
 
         return $filtered->values()->toArray();
