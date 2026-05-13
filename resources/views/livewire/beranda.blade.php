@@ -52,7 +52,7 @@
 
             <div class="flex items-center gap-2 text-text-secondary font-body-sm text-body-sm mb-2">
                 <span class="material-symbols-outlined text-[18px] animate-spin">refresh</span>
-                <span>AI sedang menganalisa profilmu...</span>
+                <span>AI sedang melakukan analisis, mohon menunggu ya...</span>
             </div>
 
             @for($i = 0; $i < 3; $i++)

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Data\OnboardingData;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -147,6 +148,31 @@ class DeepseekService
 
         $age = $profile['age'] ?? null;
 
+        $workExperienceStr = 'No work experience';
+        if (! empty($profile['work_experiences'])) {
+            $totalYears = 0;
+            $lines = [];
+            $monthNames = ['01' => 'Jan', '02' => 'Feb', '03' => 'Mar', '04' => 'Apr', '05' => 'Mei', '06' => 'Jun', '07' => 'Jul', '08' => 'Agu', '09' => 'Sep', '10' => 'Okt', '11' => 'Nov', '12' => 'Des'];
+            foreach ($profile['work_experiences'] as $exp) {
+                $startStr = '';
+                if (! empty($exp['start_date'])) {
+                    $startDate = Carbon::parse($exp['start_date']);
+                    $startStr = $monthNames[$startDate->format('m')].' '.$startDate->format('Y');
+                }
+                $endStr = 'Sekarang';
+                if (! empty($exp['end_date'])) {
+                    $endDate = Carbon::parse($exp['end_date']);
+                    $endStr = $monthNames[$endDate->format('m')].' '.$endDate->format('Y');
+                    $startDate = Carbon::parse($exp['start_date'] ?? now());
+                    $totalYears += $endDate->diffInYears($startDate);
+                } elseif (! empty($exp['start_date'])) {
+                    $totalYears += Carbon::parse($exp['start_date'])->diffInYears(now());
+                }
+                $lines[] = "- {$exp['company_name']} — {$exp['position']} ({$startStr} - {$endStr})";
+            }
+            $workExperienceStr = implode("\n", $lines)."\nTotal experience: ~{$totalYears} years";
+        }
+
         return <<<PROMPT
 You are matching a deaf/hard-of-hearing candidate to job vacancies in Indonesia's Jabodetabek area.
 
@@ -161,9 +187,12 @@ Preferred job types: {$jobTypes}
 Preferred locations: {$locations}
 Age: {$age}
 
+=== WORK EXPERIENCE ===
+{$workExperienceStr}
+
 === SCORING (0-100) ===
 - Disability fit 35%: Can a deaf person effectively do this job given its communication demands? Jobs requiring heavy verbal phone/meeting communication without accommodation = LOW score. Text-based/visual jobs = HIGH score.
-- Skill match 30%: How well do the candidate's skill categories and sub-skills align with the job's required skills?
+- Skill match 30%: How well do the candidate's skill categories, sub-skills, AND work experience align with the job's required skills? Relevant work experience in the same industry/role increases this score.
 - Environment fit 20%: How well does the work type, location, and accommodation match the candidate's preferences?
 - Communication 10%: How well do the job's communication methods match the candidate's communication methods?
 - Education 5%: How well does the candidate's education level and major match the job requirements?
