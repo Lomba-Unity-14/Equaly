@@ -1,7 +1,40 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Livewire\Academy;
+use App\Livewire\AcademyDetail;
+use App\Livewire\Beranda;
+use App\Livewire\DetailLowongan;
+use App\Livewire\HistoriLamaran;
+use App\Livewire\Lowongan;
+use App\Livewire\Matching;
+use App\Livewire\Onboarding;
+use App\Livewire\Profil;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::middleware('guest')->group(function () {
+    Route::get('/masuk', [LoginController::class, 'create'])->name('login');
+    Route::post('/masuk', [LoginController::class, 'store']);
+    Route::get('/daftar', [RegisterController::class, 'create'])->name('register');
+    Route::post('/daftar', [RegisterController::class, 'store']);
+});
+
+Route::post('/keluar', [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
+
+Route::middleware(['auth', 'onboarding'])->group(function () {
+    Route::get('/onboarding', Onboarding::class)->name('onboarding');
+
+    Route::get('/profil', Profil::class)->name('profil');
+    Route::get('/', Beranda::class)->name('beranda');
+    Route::get('/matching', Matching::class)->name('matching');
+});
+
+Route::get('/lowongan', Lowongan::class)->name('lowongan');
+Route::get('/lowongan/{lowongan}', DetailLowongan::class)->name('lowongan.detail');
+Route::get('/academy', Academy::class)->name('academy');
+Route::get('/academy/{academy}', AcademyDetail::class)->name('academy.detail');
+
+Route::middleware(['auth', 'onboarding'])->group(function () {
+    Route::get('/histori', HistoriLamaran::class)->name('histori.lamaran');
 });
