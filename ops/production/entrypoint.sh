@@ -37,6 +37,7 @@ php artisan view:cache --ansi
 
 # Start supervisor (queue worker) as background process
 echo "Starting queue worker..."
+mkdir -p /var/log/supervisor
 supervisord -c /etc/supervisor/conf.d/supervisord.conf
 
 # Switch to www user for running php-fpm
