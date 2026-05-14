@@ -8,12 +8,6 @@ chown -R www:www /var/www/html/storage
 chown -R www:www /var/www/html/bootstrap/cache
 chown -R www:www /var/www/html/database
 
-# Generate application key if not exists
-if [ -z "$APP_KEY" ]; then
-    echo "Generating application key..."
-    php artisan key:generate --ansi
-fi
-
 # Create SQLite database if not exists
 if [ ! -f /var/www/html/database/database.sqlite ]; then
     echo "Creating SQLite database..."
