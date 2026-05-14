@@ -40,6 +40,6 @@ echo "Starting queue worker..."
 mkdir -p /var/log/supervisor
 supervisord -c /etc/supervisor/conf.d/supervisord.conf
 
-# Switch to www user for running php-fpm
-echo "Starting php-fpm..."
-exec su -s /bin/sh www -c "php-fpm"
+# Keep container running (supervisor manages both queue and php-fpm)
+echo "Container ready. Waiting for supervisor..."
+wait
