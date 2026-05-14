@@ -8,6 +8,18 @@
             <h1 class="font-h1 text-h1 text-primary">Equaly</h1>
         </div>
 
+        {{-- Info Box: Kredensial Demo + Ajakan Daftar --}}
+        <div class="bg-primary-container/10 border border-primary/20 rounded-xl p-5 mb-stack-md w-full flex gap-3">
+            <span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">info</span>
+            <div class="text-body-sm text-on-primary-fixed-variant leading-relaxed flex flex-col gap-2">
+                <p>Silahkan login menggunakan kredensial yang telah kami sediakan:</p>
+                <p><strong>Email</strong>&ensp;demo@equaly.id</p>
+                <p><strong>Sandi</strong>&ensp;password</p>
+                <hr class="border-primary/20 my-1">
+                <p>Untuk memulai pengecekan kecocokan pekerjaan dengan <strong>AI Kami</strong>, silahkan daftar dan ikuti onboarding 7 langkah.</p>
+            </div>
+        </div>
+
         <!-- Form Card -->
         <div class="w-full bg-surface rounded-2xl p-8 border border-outline-variant shadow-sm">
             <header class="mb-stack-lg">
