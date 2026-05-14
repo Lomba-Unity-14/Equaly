@@ -57,8 +57,8 @@
                     @php $job = $latestApplication->jobVacancyData; @endphp
                     <div class="flex items-start gap-4">
                         <div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center shrink-0 overflow-hidden border border-border-subtle">
-                            @if($job && $job->image_logo_url)
-                                <img src="{{ $job->image_logo_url }}" alt="{{ $latestApplication->company_name }}" class="w-full h-full object-cover">
+                            @if($job && $job->company_logo_url)
+                                <img src="{{ $job->company_logo_url }}" alt="{{ $latestApplication->company_name }}" class="w-full h-full object-cover">
                             @else
                                 <span class="material-symbols-outlined text-secondary">domain</span>
                             @endif
