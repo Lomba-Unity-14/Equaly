@@ -70,6 +70,9 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 # Copy supervisor configuration
 COPY ops/production/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Copy PHP-FPM pool configuration
+COPY ops/production/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
+
 # Copy entrypoint script
 COPY ops/production/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
