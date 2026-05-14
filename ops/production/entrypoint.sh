@@ -3,6 +3,13 @@ set -e
 
 echo "Running production setup..."
 
+# Create required directories
+mkdir -p /var/www/html/storage/logs
+mkdir -p /var/www/html/storage/framework/cache
+mkdir -p /var/www/html/storage/framework/sessions
+mkdir -p /var/www/html/storage/framework/views
+mkdir -p /var/www/html/storage/app/public
+
 # Set proper permissions (run as root)
 chown -R www:www /var/www/html/storage
 chown -R www:www /var/www/html/bootstrap/cache
