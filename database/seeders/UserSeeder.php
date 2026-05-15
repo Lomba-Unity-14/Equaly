@@ -7,6 +7,7 @@ use App\Models\JobApplication;
 use App\Models\JobUserMatch;
 use App\Models\JobVacancyData;
 use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -28,7 +29,7 @@ class UserSeeder extends Seeder
         );
 
         // ── Profile (onboarding selesai) ──
-        $user->profile()->firstOrCreate(
+        UserProfile::firstOrCreate(
             ['user_id' => $user->id],
             [
                 'disability_condition' => ['tunarungu'],
