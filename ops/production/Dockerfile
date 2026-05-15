@@ -63,6 +63,9 @@ RUN addgroup -g 1000 www \
 COPY --chown=www:www . /var/www/html
 COPY --chown=www:www --from=builder /var/www/html/public/build /var/www/html/public/build
 
+# Backup built assets (bind mount of public/ will override them at runtime)
+RUN cp -r /var/www/html/public/build /tmp/public-build-backup
+
 # Copy composer files and install dependencies
 COPY composer*.json ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction

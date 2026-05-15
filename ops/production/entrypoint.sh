@@ -22,6 +22,12 @@ if [ ! -f /var/www/html/database/database.sqlite ]; then
     chown www:www /var/www/html/database/database.sqlite
 fi
 
+# Restore built assets (bind mount of public/ overrides image build)
+if [ ! -d /var/www/html/public/build ]; then
+    echo "Restoring built assets..."
+    cp -r /tmp/public-build-backup /var/www/html/public/build
+fi
+
 # Run migrations
 echo "Running migrations..."
 php artisan migrate --force --ansi
