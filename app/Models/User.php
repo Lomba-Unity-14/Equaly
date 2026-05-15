@@ -29,6 +29,16 @@ class User extends Authenticatable
         return $this->hasMany(WorkExperience::class);
     }
 
+    public function jobUserMatches(): HasMany
+    {
+        return $this->hasMany(JobUserMatch::class);
+    }
+
+    public function jobApplications(): HasMany
+    {
+        return $this->hasMany(JobApplication::class);
+    }
+
     protected function casts(): array
     {
         return [
