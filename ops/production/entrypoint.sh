@@ -26,9 +26,17 @@ fi
 echo "Running migrations..."
 php artisan migrate --force --ansi
 
+# Run seeders
+echo "Running seeders..."
+php artisan db:seed --force --ansi
+
 # Create storage symlink
 echo "Creating storage symlink..."
 php artisan storage:link --ansi
+
+# Publish Livewire assets for production
+echo "Publishing Livewire assets..."
+php artisan vendor:publish --tag=livewire:assets --force --ansi
 
 # Cache configuration for production
 echo "Caching configuration..."
